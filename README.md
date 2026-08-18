@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://img.shields.io/badge/DAHOOM-v4.6.0%20Stable-06b6d4?style=for-the-badge&logo=shield" alt="DAHOOM" />
-  <h1>🦅 DAHOOM</h1>
+  <h1>Ⓓ DAHOOM</h1>
   <p><b>Lightning-fast, modern Terminal UI & Web Control Panel for SSH/VPN tunneling, protocol deployment, bandwidth shaping, and user management on Linux servers.</b></p>
 
   <img src="https://img.shields.io/badge/Platform-Linux%20(Ubuntu%2FDebian%2FAlmaLinux%2FRocky%2FCentOS%2FArch)-lightgrey?style=flat-square" alt="Platform">
