@@ -26,7 +26,7 @@ pause() { echo; read -r -p "$(echo -e "  ${C_GRAY}Press Enter to continue...${C_
 banner() {
     clear
     echo -e "  ${C_BOLD}${C_ICE}╭──────────────────────────────────────────────────────────╮${C_RESET}"
-    echo -e "  ${C_BOLD}${C_ICE}│${C_RESET}  ${C_BOLD}🦅 DAHOOM${C_RESET}  ${C_GRAY}License Panel${C_RESET}$(printf '%*s' 35 '')${C_BOLD}${C_ICE}│${C_RESET}"
+    echo -e "  ${C_BOLD}${C_ICE}│${C_RESET}  ${C_BOLD}Ⓓ DAHOOM${C_RESET}  ${C_GRAY}License Panel${C_RESET}$(printf '%*s' 33 '')${C_BOLD}${C_ICE}│${C_RESET}"
     echo -e "  ${C_BOLD}${C_ICE}╰──────────────────────────────────────────────────────────╯${C_RESET}"
     echo
 }
