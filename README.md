@@ -18,8 +18,7 @@ personal license key can unlock.
 To install, use the **License ID** and **License Key** you were given:
 
 ```bash
-export FM_ID=your-id FM_KEY='your-key'
-bash <(curl -sL https://raw.githubusercontent.com/mooa322/fm/main/install.sh)
+FM_ID=owner bash <(curl -sL https://raw.githubusercontent.com/mooa322/fm/main/install.sh)
 ```
 
 You can also just run the installer and it will prompt for the ID and key:
