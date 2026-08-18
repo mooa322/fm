@@ -1,0 +1,16 @@
+# Local Environment & Secrets
+.env
+.env.local
+.env.*
+.server_credentials.json
+*.local.json
+*.key
+*.pem
+__pycache__/
+*.pyc
+scratch/
+
+# ── DAHOOM licensing: keep the plaintext master source and the client
+#    key database OUT of the public repo. Only clients/*.enc get pushed.
+src/
+tools/.clients.db
