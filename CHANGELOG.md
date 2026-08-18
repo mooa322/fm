@@ -3,6 +3,19 @@
 All notable changes to the FirewallFalcon project will be documented in this file.
 The format is based on Keep a Changelog and adheres to the `4.6.0_COMMIT_SHA` versioning standard.
 
+## [4.6.0_github_api_freshness] - 2026-08-18
+### Fixed
+- **`licenses.json` reads switched from `raw.githubusercontent.com` to the
+  GitHub Contents API.** `raw.githubusercontent.com` sits behind a Fastly
+  CDN that caches for up to 5 minutes and ignores cache-busting query
+  strings for this content — verified live: a push landed instantly but the
+  raw URL still served the pre-push version for several minutes. The
+  Contents API (`api.github.com/repos/.../contents/licenses.json`, with
+  `Accept: application/vnd.github.raw`) caches for 60 seconds, so a revoke
+  or a new IP binding takes effect in roughly a minute instead of up to five.
+  `menu.enc` stays on `raw.githubusercontent.com` since it changes rarely
+  and is large — freshness doesn't matter there the way it does for licensing.
+
 ## [4.6.0_static_ip_licensing] - 2026-08-18
 ### Security
 - **Dropped the Cloudflare Worker; licensing is now a plain file on this repo.**

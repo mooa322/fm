@@ -77,7 +77,7 @@ fi
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
 PAYLOAD_URL="https://raw.githubusercontent.com/mooa322/fm/main/menu.enc"
-LICENSES_URL="https://raw.githubusercontent.com/mooa322/fm/main/licenses.json"
+LICENSES_URL="https://api.github.com/repos/mooa322/fm/contents/licenses.json?ref=main"
 FM_PKEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
 
 fm_gate() {
@@ -104,7 +104,7 @@ fm_gate() {
     [ -n "$id" ] || { echo -e "${C_RED}[FAIL] No license provided.${C_RESET}"; exit 1; }
     [[ "$id" =~ ^[A-Za-z0-9_-]+$ ]] || { echo -e "${C_RED}[FAIL] Invalid license code.${C_RESET}"; exit 1; }
 
-    local licenses; licenses="$(curl -fsSL --max-time 10 "$LICENSES_URL" 2>/dev/null || true)"
+    local licenses; licenses="$(curl -fsSL --max-time 10 -H "Accept: application/vnd.github.raw" "$LICENSES_URL" 2>/dev/null || true)"
     [ -n "$licenses" ] || { echo -e "${C_RED}[FAIL] Could not reach the license list. Check your internet.${C_RESET}"; exit 1; }
 
     local block; block="$(printf '%s\n' "$licenses" | grep -A3 "\"${id}\": {" || true)"
