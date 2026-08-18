@@ -68,13 +68,16 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # ── License gate ─────────────────────────────────────────────────────
-# The protected payload (menu.sh, ssh, panel, update_panel.sh) is not
-# published in plaintext. It ships as a per-client encrypted bundle at
-# clients/<id>.enc. This gate fetches that bundle, decrypts it with the
-# client's key, and unpacks it to $FM_SRC for the installer to use.
+# The protected payload is not published in plaintext. It ships as a
+# single encrypted bundle (menu.enc). The decryption key is NOT given to
+# the client — it lives on the activation Worker, which releases it only
+# to the first server that activates the license, and binds it to that
+# server's IP. A second server is refused; a revoked license is refused.
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
-CLIENTS_URL="https://raw.githubusercontent.com/mooa322/fm/main/clients"
+PAYLOAD_URL="https://raw.githubusercontent.com/mooa322/fm/main/menu.enc"
+# Activation endpoint — set to your deployed Cloudflare Worker.
+ACTIVATE_URL="https://dahoom-activation.vpsgggw1890.workers.dev/activate"
 
 fm_gate() {
     [ -n "${_FM_GATE_DONE:-}" ] && [ -f "$FM_SRC/menu.sh" ] && return 0
@@ -86,43 +89,63 @@ fm_gate() {
     command -v openssl >/dev/null 2>&1 || {
         echo -e "${C_RED}[FAIL] openssl is required and could not be installed.${C_RESET}"; exit 1; }
 
-    local id="${FM_ID:-}" key="${FM_KEY:-}"
-    if { [ -z "$id" ] || [ -z "$key" ]; } && [ -f "$FM_LICENSE" ]; then
-        id="$(sed -n 's/^FM_ID=//p'  "$FM_LICENSE" 2>/dev/null)"
-        key="$(sed -n 's/^FM_KEY=//p' "$FM_LICENSE" 2>/dev/null)"
+    local id="${FM_ID:-}"
+    if [ -z "$id" ] && [ -f "$FM_LICENSE" ]; then
+        id="$(sed -n 's/^FM_ID=//p' "$FM_LICENSE" 2>/dev/null)"
     fi
-    if [ -z "$id" ] || [ -z "$key" ]; then
+    if [ -z "$id" ]; then
         echo
         echo -e "  ${C_CYAN}┌── License Required ────────────────────────────────────┐${C_RESET}"
-        echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}Enter the license you received to continue.${C_RESET}"
+        echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}Enter the license code you received to continue.${C_RESET}"
         echo -e "  ${C_CYAN}└────────────────────────────────────────────────────────┘${C_RESET}"
-        [ -z "$id" ]  && read -r  -p "$(echo -e "  ${C_BLUE}License ID : ${C_RESET}")" id
-        [ -z "$key" ] && read -rs -p "$(echo -e "  ${C_BLUE}License Key: ${C_RESET}")" key && echo
+        read -r -p "$(echo -e "  ${C_BLUE}License code: ${C_RESET}")" id
     fi
-    [ -n "$id" ] && [ -n "$key" ] || {
-        echo -e "${C_RED}[FAIL] No license provided.${C_RESET}"; exit 1; }
+    [ -n "$id" ] || { echo -e "${C_RED}[FAIL] No license provided.${C_RESET}"; exit 1; }
+
+    # this server's public IP — the license binds to it on first use
+    local ip
+    ip="$(curl -fsS --max-time 8 https://api.ipify.org 2>/dev/null \
+          || curl -fsS --max-time 8 https://ifconfig.me/ip 2>/dev/null \
+          || curl -fsS --max-time 8 https://icanhazip.com 2>/dev/null)"
+    ip="$(printf '%s' "$ip" | tr -d '[:space:]')"
+    [ -n "$ip" ] || { echo -e "${C_RED}[FAIL] Could not determine this server's public IP.${C_RESET}"; exit 1; }
+
+    # ask the activation server for the decryption key for this id + ip
+    local resp key
+    resp="$(curl -sS --max-time 15 -X POST "$ACTIVATE_URL" \
+            -H 'content-type: application/json' \
+            -d "{\"id\":\"${id}\",\"ip\":\"${ip}\"}" 2>/dev/null || true)"
+    if ! printf '%s' "$resp" | grep -Eq '"ok"[[:space:]]*:[[:space:]]*true'; then
+        echo
+        case "$resp" in
+            *"another server"*) echo -e "${C_RED}[FAIL] This license is already active on another server.${C_RESET}";;
+            *"revoked"*)        echo -e "${C_RED}[FAIL] This license has been revoked.${C_RESET}";;
+            *"not found"*)      echo -e "${C_RED}[FAIL] License '${id}' is not valid.${C_RESET}";;
+            *)                  echo -e "${C_RED}[FAIL] Activation failed. Check your license and internet.${C_RESET}";;
+        esac
+        echo -e "${C_YELLOW}       Contact the provider if you believe this is a mistake.${C_RESET}"
+        exit 1
+    fi
+    key="$(printf '%s' "$resp" | sed -n 's/.*"key"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+    [ -n "$key" ] || { echo -e "${C_RED}[FAIL] Activation server returned no key.${C_RESET}"; exit 1; }
 
     local enc; enc="$(mktemp)"
-    if ! curl -fsSL "$CLIENTS_URL/${id}.enc" -o "$enc" 2>/dev/null; then
-        rm -f "$enc"
-        echo -e "${C_RED}[FAIL] License '${id}' not found or has been revoked.${C_RESET}"
-        echo -e "${C_YELLOW}       Contact the provider for a valid license.${C_RESET}"
-        exit 1
+    if ! curl -fsSL "$PAYLOAD_URL" -o "$enc" 2>/dev/null; then
+        rm -f "$enc"; echo -e "${C_RED}[FAIL] Could not download the payload.${C_RESET}"; exit 1
     fi
     rm -rf "$FM_SRC"; mkdir -p "$FM_SRC"; chmod 700 "$FM_SRC"
     if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:${key}" 2>/dev/null \
          | tar -xzf - -C "$FM_SRC" 2>/dev/null || [ ! -f "$FM_SRC/menu.sh" ]; then
         rm -f "$enc"; rm -rf "$FM_SRC"
-        echo -e "${C_RED}[FAIL] Wrong license key for '${id}'.${C_RESET}"
-        exit 1
+        echo -e "${C_RED}[FAIL] Payload could not be decrypted.${C_RESET}"; exit 1
     fi
     rm -f "$enc"
 
     mkdir -p "$FF_DIR"
-    printf 'FM_ID=%s\nFM_KEY=%s\n' "$id" "$key" > "$FM_LICENSE"
+    printf 'FM_ID=%s\n' "$id" > "$FM_LICENSE"   # only the id is stored; never the key
     chmod 600 "$FM_LICENSE"
     _FM_GATE_DONE=1
-    echo -e "  ${C_GREEN}✅ License '${id}' verified.${C_RESET}"
+    echo -e "  ${C_GREEN}✅ License '${id}' activated for this server.${C_RESET}"
 }
 
 fetch_remote_sha() {

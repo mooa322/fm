@@ -1,0 +1,14 @@
+name = "dahoom-activation"
+main = "activation-worker.js"
+compatibility_date = "2024-11-01"
+
+# The KV namespace that stores per-client binding state.
+# Create it once:   npx wrangler kv namespace create LICENSES
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "PASTE_YOUR_KV_NAMESPACE_ID_HERE"
+
+# Secrets (do NOT put them here — set them with wrangler):
+#   npx wrangler secret put PAYLOAD_KEY     # the master key that decrypts menu.enc
+#   npx wrangler secret put ADMIN_TOKEN     # a long random admin password

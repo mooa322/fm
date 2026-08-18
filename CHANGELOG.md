@@ -3,6 +3,25 @@
 All notable changes to the FirewallFalcon project will be documented in this file.
 The format is based on Keep a Changelog and adheres to the `4.6.0_COMMIT_SHA` versioning standard.
 
+## [4.6.0_activation_licensing] - 2026-08-18
+### Security
+- **Replaced per-client encrypted files with a single activation-gated payload.**
+  The tool now ships as ONE encrypted bundle (`menu.enc`) on the repo. The
+  decryption key never touches a client — it lives only on a Cloudflare Worker
+  (`tools/worker/activation-worker.js`) which releases it exclusively to the
+  first server IP that activates a given license id, via KV-backed state.
+  A second server on the same id is refused; a revoked id is refused
+  everywhere immediately.
+- Clients now need a single code (their license id) — no key to copy.
+  `install.sh`'s `fm_gate`, and `src/menu.sh` / `src/update_panel.sh`'s
+  `_fm_pull_src`, all resolve their own public IP and call the Worker's
+  `/activate` endpoint before decrypting `menu.enc`.
+- Seller tooling: `tools/issue-client.sh` (issue), `tools/revoke-client.sh`
+  (revoke everywhere), `tools/unbind-client.sh` (move a client to a new
+  server), `tools/list-clients.sh` (audit), `tools/build-payload.sh`
+  (re-encrypt `menu.enc` after editing `src/`). Full setup in `tools/SELLING.md`.
+- The previous per-client `clients/<id>.enc` model and its files are removed.
+
 ## [4.6.0_licensed_encryption] - 2026-08-18
 ### Security
 - **Per-client encryption gate.** The tool is no longer published in plaintext.

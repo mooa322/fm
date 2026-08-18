@@ -1,70 +1,125 @@
 # DAHOOM — Seller's licensing guide
 
-This folder holds the tooling that controls who can install DAHOOM.
+The tool is gated by an **activation server** (a free Cloudflare Worker).
+Each license binds to the **first server** that installs it; a second
+server is refused. You can revoke any license instantly.
+
 Everything here runs **on your own machine**, never on a client server.
 
-## How protection works
+---
 
-- The real tool (`src/menu.sh`, `src/ssh`, `src/update_panel.sh`, `src/panel/*`)
-  is **never** published in plaintext. `src/` is git-ignored.
-- For each client you run `issue-client.sh`, which encrypts the current
-  source into `clients/<id>.enc` (AES-256) under a key unique to that client.
-- The public `install.sh` asks the client for their ID + key, downloads
-  their `.enc`, decrypts it, and installs. No key → nothing installs.
-- To cut a client off, delete their `.enc` (`revoke-client.sh`). Everyone
-  else is unaffected.
+## How it works
 
-## First-time setup
+- The real tool lives only in `src/` (git-ignored) and ships as ONE
+  encrypted file, `menu.enc`, on the public repo.
+- The decryption key is **not** in the repo and **not** given to clients.
+  It lives on your Worker as the `PAYLOAD_KEY` secret.
+- When a client installs, `install.sh` sends their license id + the
+  server's public IP to the Worker. The Worker binds the id to that IP
+  (first time), and returns the key only for the bound IP. Another IP →
+  refused. Revoked → refused.
+- The client needs only ONE code (their id). No key to type, no second
+  value.
 
-Keep two things safe and backed up — losing them loses control:
+---
 
-- **`src/`** — the plaintext master source you edit. Never commit it.
-- **`tools/.clients.db`** — id→key ledger. Needed to re-issue updates.
-  Chmod is 600. Back it up somewhere private (not the repo).
+## One-time setup (≈10 minutes)
 
-## Issue a license to a new client
+You need a free Cloudflare account and Node.js installed.
 
+1. **Get the code on your machine** and enter the repo:
+   ```bash
+   git clone https://github.com/mooa322/fm
+   cd fm
+   ```
+   Then put your plaintext master source into `src/` (ask the provider of
+   this build for the `src/` folder — it is never published). The layout is:
+   `src/menu.sh  src/ssh  src/update_panel.sh  src/panel/*`.
+
+2. **Create the KV namespace** (stores which id is bound to which IP):
+   ```bash
+   npx wrangler kv namespace create LICENSES
+   ```
+   Copy the printed `id` into `tools/worker/wrangler.toml`.
+
+3. **Set the two secrets** on the Worker:
+   ```bash
+   # a strong master key (also used locally to build menu.enc)
+   openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 44   # copy this
+   npx wrangler secret put PAYLOAD_KEY   # paste it
+   npx wrangler secret put ADMIN_TOKEN   # paste a long random admin password
+   ```
+
+4. **Deploy the Worker:**
+   ```bash
+   cd tools/worker && npx wrangler deploy && cd ../..
+   ```
+   Note the printed URL, e.g. `https://dahoom-activation.YOURNAME.workers.dev`.
+
+5. **Fill `tools/.worker.env`** (copy from `.worker.env.example`):
+   ```
+   WORKER_URL=https://dahoom-activation.YOURNAME.workers.dev
+   ADMIN_TOKEN=...the admin password from step 3...
+   PAYLOAD_KEY=...the master key from step 3...
+   ```
+
+6. **Point the installer at your Worker.** In `install.sh` and
+   `src/menu.sh` and `src/update_panel.sh`, replace the placeholder
+   `https://dahoom-activation.CHANGE-ME.workers.dev` with your real URL.
+   (Ask the provider to do this once if you prefer.)
+
+7. **Build and publish the payload:**
+   ```bash
+   ./tools/build-payload.sh
+   git add menu.enc install.sh && git commit -m "release" && git push
+   ```
+
+Keep **`src/`**, **`tools/.worker.env`**, and your Cloudflare account safe.
+Losing them loses control.
+
+---
+
+## Daily use
+
+**Issue a license to a client:**
 ```bash
-./tools/issue-client.sh ahmed-vps1
-# or pin your own passphrase:
-./tools/issue-client.sh ahmed-vps1 'some-strong-pass'
+./tools/issue-client.sh ahmed          # or omit the name for a random id
+```
+It prints the ONE line to send the client:
+```
+FM_ID=ahmed bash <(curl -sL https://raw.githubusercontent.com/mooa322/fm/main/install.sh)
 ```
 
-It prints the two lines to hand the client, and writes `clients/ahmed-vps1.enc`.
-Publish it:
-
+**See all licenses and which server each is bound to:**
 ```bash
-git add clients/ahmed-vps1.enc && git commit -m "license: ahmed-vps1" && git push
+./tools/list-clients.sh
 ```
 
-## Ship an update to everyone
-
-After you edit anything under `src/`:
-
+**Revoke a client (stops them everywhere, instantly):**
 ```bash
-./tools/rebuild-all.sh          # re-encrypts current src/ for every active client
-git add clients/ && git commit -m "release: <what changed>" && git push
+./tools/revoke-client.sh ahmed
 ```
 
-Each client's server pulls the new encrypted bundle on its next update.
-
-## Revoke a client
-
+**Client moved to a new server?** Clear the IP lock so their next install
+binds to the new one:
 ```bash
-./tools/revoke-client.sh ahmed-vps1
-git commit -am "revoke: ahmed-vps1" && git push
+./tools/unbind-client.sh ahmed
 ```
 
-Their fresh installs and updates now fail with 404. **Note:** a server where
-DAHOOM is *already running* keeps running until it next tries to update
-(then it can't refresh and stays on its current copy). Stopping an
-already-running install remotely would need an online activation server —
-this model does not do that.
+**Ship a new version to everyone:** edit `src/`, then:
+```bash
+./tools/build-payload.sh && git add menu.enc && git commit -m release && git push
+```
+Every client picks it up on their next update — re-checking their IP.
+
+---
 
 ## Honest limits
 
-- A client you gave a key to can decrypt their bundle and read the source.
-  Encryption stops **non-clients**, not the buyer themselves.
-- Keys can be shared by a client. Because each client has their own key,
-  a leak is traceable and you revoke just that one.
-- The repo is public; the `.enc` blobs are meaningless without a key.
+- The IP binding and key release happen at **install/update time**. A
+  server already running keeps running offline; there is no constant
+  heartbeat (by your choice).
+- A client can decrypt the payload on their bound server and read the
+  source — encryption stops non-clients, not the buyer themselves.
+- If the Worker is down, new installs and updates fail until it is back.
+  Existing installs keep working.

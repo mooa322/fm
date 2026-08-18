@@ -13,4 +13,5 @@ scratch/
 # ── DAHOOM licensing: keep the plaintext master source and the client
 #    key database OUT of the public repo. Only clients/*.enc get pushed.
 src/
+tools/.worker.env
 tools/.clients.db
