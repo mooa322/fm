@@ -12,6 +12,6 @@
   "VIP": {
     "ip": "169.58.127.51",
     "issued": "2026-08-18",
-    "revoked": false
+    "revoked": true
   }
 }
