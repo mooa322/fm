@@ -3,6 +3,32 @@
 All notable changes to the FirewallFalcon project will be documented in this file.
 The format is based on Keep a Changelog and adheres to the `4.6.0_COMMIT_SHA` versioning standard.
 
+## [4.6.0_static_ip_licensing] - 2026-08-18
+### Security
+- **Dropped the Cloudflare Worker; licensing is now a plain file on this repo.**
+  `licenses.json` lists each client id with an optional pre-registered IP,
+  issue date and a `revoked` flag. `install.sh` checks it before installing:
+  the id must exist, not be revoked, and — if the seller registered an IP
+  for it — the requesting server's IP must match. `src/menu.sh` carries the
+  same check (its `licenses.json` URL is base64-obfuscated in the source so
+  it isn't a plain grep hit) and re-validates on every launch, so a revoke
+  takes effect the next time the tool runs.
+- No live server means the decryption key (`FM_PKEY`) is embedded directly
+  in `install.sh` and `src/menu.sh` / `src/update_panel.sh`. This is a real,
+  disclosed trade-off: a technically capable person reading the code can
+  bypass the checks. What this system still gives the seller: instant
+  revocation for normal use, a real IP lock for pre-registered clients, and
+  an audit trail — all editable only by repo collaborators, since GitHub's
+  own permissions (not the encryption) are what stop anyone else from
+  writing to `licenses.json` or `menu.enc`.
+- Seller tooling collapsed to one script, `tools/manage-license.sh`
+  (`issue [ip]`, `revoke`, `unbind`, `list`) that edits `licenses.json`
+  locally — no server, no dashboard, no admin token. Guide in
+  `tools/SELLING.md`.
+- Removed the Cloudflare Worker (`tools/worker/`) and its four admin
+  scripts (`issue-client.sh`, `revoke-client.sh`, `unbind-client.sh`,
+  `list-clients.sh`) from the previous attempt.
+
 ## [4.6.0_activation_licensing] - 2026-08-18
 ### Security
 - **Replaced per-client encrypted files with a single activation-gated payload.**

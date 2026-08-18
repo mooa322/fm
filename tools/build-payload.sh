@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════
 #  DAHOOM · Build the encrypted payload (menu.enc)
-#  Encrypts the current src/ under your master PAYLOAD_KEY and writes
-#  menu.enc into the repo root. Run after editing anything in src/.
+#  Encrypts the current src/ and writes menu.enc into the repo root.
+#  Run after editing anything in src/.
 #
 #  Usage:  ./tools/build-payload.sh
 # ═══════════════════════════════════════════════════════════════════
 set -euo pipefail
 cd "$(dirname "$0")/.."
 . tools/_fmcrypto.sh
-[ -f tools/.worker.env ] || { echo "[ERROR] tools/.worker.env not found (copy .worker.env.example)"; exit 1; }
-set -a; . tools/.worker.env; set +a
-[ -n "${PAYLOAD_KEY:-}" ] || { echo "[ERROR] PAYLOAD_KEY not set in tools/.worker.env"; exit 1; }
+
+# Must match FM_PKEY in install.sh, src/menu.sh and src/update_panel.sh —
+# it's embedded there since there's no live server to hold it secretly.
+PAYLOAD_KEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
+
 command -v openssl >/dev/null || { echo "[ERROR] openssl required"; exit 1; }
 for f in "${FM_PAYLOAD[@]}"; do [ -f "$FM_SRC_DIR/$f" ] || { echo "[ERROR] missing $FM_SRC_DIR/$f"; exit 1; }; done
 
