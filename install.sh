@@ -16,7 +16,7 @@ C_GRAY=$'\033[38;5;245m'     # Gray
 C_ORANGE=$'\033[38;5;208m'   # Orange
 
 # ---- Paths ----
-MENU_BIN="/usr/local/bin/menu"
+MENU_BIN="/usr/local/bin/dahoom"
 FF_DIR="/etc/firewallfalcon"
 INSTALL_FLAG="$FF_DIR/.install"
 VERSION_FILE="$FF_DIR/.version"
@@ -397,7 +397,7 @@ install_tool() {
     echo -e "  ${C_CYAN}┌── Installation Complete ────────────────────────────────┐${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_GREEN}✅ DAHOOM installed successfully!${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Version: ${new_ver}${C_RESET}"
-    echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Type 'menu' anytime to launch the control panel.${C_RESET}"
+    echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Type 'dahoom' anytime to launch the control panel.${C_RESET}"
     echo -e "  ${C_CYAN}└────────────────────────────────────────────────────────┘${C_RESET}"
     echo
     echo -e "  ${C_GREEN}[1]${C_RESET} Open DAHOOM Manager"
