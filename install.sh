@@ -78,7 +78,9 @@ FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
 PAYLOAD_URL="https://raw.githubusercontent.com/mooa322/fm/main/menu.enc"
 _FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2ZtL2NvbnRlbnRzL2xpY2Vuc2VzLmpzb24/cmVmPW1haW4="
+_FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0vbWFpbi9saWNlbnNlcy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
+_fm_licenses_url_fallback() { printf '%s' "$_FM_LIC_FALLBACK_B64" | base64 -d 2>/dev/null; }
 FM_PKEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
 
 fm_gate() {
@@ -106,6 +108,10 @@ fm_gate() {
     [[ "$id" =~ ^[A-Za-z0-9_-]+$ ]] || { echo -e "${C_RED}[FAIL] Invalid license code.${C_RESET}"; exit 1; }
 
     local licenses; licenses="$(curl -fsSL --max-time 10 -H "Accept: application/vnd.github.raw" "$(_fm_licenses_url)" 2>/dev/null || true)"
+    # api.github.com shares GitHub's low unauthenticated rate limit (60/hr per IP)
+    # and can also be blocked/slow on some networks; fall back to the raw CDN
+    # mirror (looser limits) before giving up.
+    [ -n "$licenses" ] || licenses="$(curl -fsSL --max-time 10 "$(_fm_licenses_url_fallback)" 2>/dev/null || true)"
     [ -n "$licenses" ] || { echo -e "${C_RED}[FAIL] Could not reach the license list. Check your internet.${C_RESET}"; exit 1; }
 
     local block; block="$(printf '%s\n' "$licenses" | grep -A3 "\"${id}\": {" || true)"
