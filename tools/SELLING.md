@@ -1,50 +1,51 @@
 # DAHOOM — Seller's licensing guide
 
-No live server. Access is controlled by a plain file on this same repo,
-`licenses.json`, which only you (or someone you push to the repo) can edit —
-GitHub already prevents anyone else from writing to it.
+No live server. Access is controlled by a license database that lives in a
+**second, unrelated repo** (`mooa322/instalasi`, `config/reg.json`) — kept
+out of this repo on purpose so it isn't sitting next to the tool's own code.
+Only you (or someone you push to that repo) can edit it — GitHub's own repo
+permissions are what actually enforce that, not encryption.
 
 ## How it works
 
 - The real tool (`src/menu.sh`, `src/ssh`, `src/update_panel.sh`, `src/panel/*`)
   is never published in plaintext. `src/` is git-ignored, and ships as one
-  encrypted file, `menu.enc`, on the repo.
-- `licenses.json` lists each client: `{"ip": "...", "issued": "...", "revoked": false}`.
-- The public `install.sh` reads `licenses.json` before installing:
+  encrypted file, `menu.enc`, on this repo.
+- The database lists each client: `{"ip": "...", "issued": "...", "revoked": false}`.
+- The public `install.sh` reads the database before installing:
   - the license id must exist and not be revoked
   - if you set an `ip` for it, the requesting server's IP must match
-- `src/menu.sh` re-checks the same file on every launch, and re-downloads
+- `src/menu.sh` re-checks the same database on every launch, and re-downloads
   `menu.enc` on update — so a revoke takes effect the next time the tool runs.
 
 ## Honest limits (read this once)
 
-- **The decryption key is embedded in `install.sh` and inside `menu.sh`.**
-  There is no live secret-holder, so this can't be hidden from a technically
-  capable person who reads the code — they could bypass the checks entirely.
-  What this system *does* give you: a clear audit trail, instant revocation
-  for anyone using the tool normally, and a real IP lock for licenses you
-  pre-register — which stops casual reuse and misuse, just not a determined
-  reverse-engineer.
-- **Nobody but you can edit `licenses.json` or `menu.enc`** — that's GitHub's
-  own repo permissions, unrelated to encryption.
+- **The decryption key isn't embedded in plaintext anywhere in this repo**
+  — it's fetched from `instalasi` at first use, and even there it's stored
+  obfuscated, not as a plain string. This raises the bar against someone
+  skimming the code, but it can't be hidden from a technically capable
+  person who reads `_fm_pkey()` and follows the fetch — there is no live
+  secret-holder, so this can't stop a determined reverse-engineer, only
+  slow down a casual one. What this system *does* give you: a clear audit
+  trail, instant revocation for anyone using the tool normally, and a real
+  IP lock for licenses you pre-register — which stops casual reuse and
+  misuse.
+- **Nobody but you can edit the license database or `menu.enc`** — that's
+  GitHub's own repo permissions, unrelated to encryption or obfuscation.
 - **Real IP-locking requires you to know the client's server IP up front.**
-  Ask for it before issuing the license (`issue <id> <ip>`). A license issued
-  without an IP works on any server until you set one.
+  Ask for it before issuing the license. A license issued without an IP
+  works on any server until you set one.
 
 ## Daily use
 
+Run the interactive panel — no commands to memorize:
 ```bash
-./tools/manage-license.sh issue ahmed 203.0.113.9   # locked to that IP
-./tools/manage-license.sh issue sara                # open until you set an IP
-./tools/manage-license.sh list
-./tools/manage-license.sh revoke ahmed              # blocks it everywhere
-./tools/manage-license.sh unbind ahmed              # let it re-bind to a new server
+./tools/license-panel.sh
 ```
-
-Every command edits `licenses.json` locally — you still need to publish it:
-```bash
-git add licenses.json && git commit -m "license: ..." && git push
-```
+It walks you through issuing, revoking, unbinding, and listing licenses,
+and offers to `git commit` + `git push` automatically after every change —
+against a local working clone of `instalasi` it manages for you under
+`.license-data/` (gitignored, invisible to this repo's own history).
 
 Give the client just their id, e.g.:
 ```

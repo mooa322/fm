@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════
 #  DAHOOM · License Panel — interactive license management
-#  A menu-driven front-end over licenses.json. No commands to memorize:
-#  issue, revoke, unbind and list, all from arrow-free numbered prompts,
-#  with git commit & push handled automatically after every change.
+#  A menu-driven front-end over the license database. No commands to
+#  memorize: issue, revoke, unbind and list, all from arrow-free numbered
+#  prompts, with git commit & push handled automatically after every change.
+#
+#  The database lives in a second, unrelated repo (not this one) — this
+#  script transparently keeps a local working clone of it under
+#  .license-data/ (gitignored here) and pushes there, never to this repo.
 #
 #  Usage:  ./tools/license-panel.sh
 # ═══════════════════════════════════════════════════════════════════
@@ -16,10 +20,43 @@ C_CYAN=$'\033[38;5;51m'; C_ICE=$'\033[38;5;87m'; C_VIOLET=$'\033[38;5;177m'
 C_GREEN=$'\033[38;5;79m'; C_RED=$'\033[38;5;204m'; C_YELLOW=$'\033[38;5;222m'
 C_GRAY=$'\033[38;5;245m'; C_WHITE=$'\033[38;5;255m'; C_FRAME=$'\033[38;5;60m'
 
-FILE="licenses.json"
-[ -f "$FILE" ] || echo '{}' > "$FILE"
 command -v python3 >/dev/null 2>&1 || { echo -e "${C_RED}python3 is required.${C_RESET}"; exit 1; }
 command -v git >/dev/null 2>&1 || { echo -e "${C_RED}git is required.${C_RESET}"; exit 1; }
+
+# ── Data repo: a local working clone kept out of this repo entirely ──
+DATA_DIR=".license-data"
+DATA_REL_FILE="config/reg.json"
+FILE="$DATA_DIR/$DATA_REL_FILE"
+
+# Reuse whatever credential this repo's own origin already has (e.g. an
+# embedded token) so the seller never has to authenticate twice.
+_data_repo_url() {
+    local origin token
+    origin="$(git remote get-url origin 2>/dev/null || true)"
+    token="$(printf '%s' "$origin" | sed -n 's#https://\([^@]*\)@github\.com/.*#\1#p')"
+    if [ -n "$token" ]; then
+        printf 'https://%s@github.com/mooa322/instalasi.git' "$token"
+    else
+        printf 'https://github.com/mooa322/instalasi.git'
+    fi
+}
+
+ensure_data_repo() {
+    local url; url="$(_data_repo_url)"
+    if [ -d "$DATA_DIR/.git" ]; then
+        git -C "$DATA_DIR" remote set-url origin "$url" >/dev/null 2>&1 || true
+        git -C "$DATA_DIR" pull -q origin main --no-edit --no-rebase >/dev/null 2>&1 || true
+    else
+        rm -rf "$DATA_DIR"
+        if ! git clone -q "$url" "$DATA_DIR" >/dev/null 2>&1; then
+            echo -e "${C_RED}Could not clone the license data repo — check your GitHub access.${C_RESET}"
+            exit 1
+        fi
+    fi
+    mkdir -p "$(dirname "$FILE")"
+    [ -f "$FILE" ] || echo '{}' > "$FILE"
+}
+ensure_data_repo
 
 pause() { echo; read -r -p "$(echo -e "  ${C_GRAY}Press Enter to continue...${C_RESET}")" _ || exit 0; }
 
@@ -56,20 +93,20 @@ git_publish() {
     read -r -p "$(echo -e "  ${C_YELLOW}Push this change to GitHub now? [Y/n]: ${C_RESET}")" ans
     ans=${ans:-Y}
     if [[ "$ans" =~ ^[Yy]$ ]]; then
-        git add "$FILE" >/dev/null 2>&1
-        if git diff --cached --quiet -- "$FILE"; then
+        git -C "$DATA_DIR" add "$DATA_REL_FILE" >/dev/null 2>&1
+        if git -C "$DATA_DIR" diff --cached --quiet -- "$DATA_REL_FILE"; then
             echo -e "  ${C_GRAY}Nothing to push (no change).${C_RESET}"
             return
         fi
-        git commit -q -m "$msg" >/dev/null 2>&1
+        git -C "$DATA_DIR" commit -q -m "$msg" >/dev/null 2>&1
         local n=0
-        until git push origin "$(git branch --show-current)" 2>/dev/null; do
-            n=$((n+1)); [ $n -ge 4 ] && { echo -e "  ${C_RED}Push failed after retries. Run 'git push' manually.${C_RESET}"; return 1; }
+        until git -C "$DATA_DIR" push origin "$(git -C "$DATA_DIR" branch --show-current)" 2>/dev/null; do
+            n=$((n+1)); [ $n -ge 4 ] && { echo -e "  ${C_RED}Push failed after retries. Run 'git -C $DATA_DIR push' manually.${C_RESET}"; return 1; }
             sleep $((2**n))
         done
         echo -e "  ${C_GREEN}✅ Pushed. Live in ~1 minute.${C_RESET}"
     else
-        echo -e "  ${C_GRAY}Not pushed — remember: git add licenses.json && git commit && git push${C_RESET}"
+        echo -e "  ${C_GRAY}Not pushed — remember: git -C $DATA_DIR add $DATA_REL_FILE && git -C $DATA_DIR commit && git -C $DATA_DIR push${C_RESET}"
     fi
 }
 

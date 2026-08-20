@@ -72,16 +72,17 @@ fi
 
 # ── License gate ─────────────────────────────────────────────────────
 # The protected payload is not published in plaintext. It ships as one
-# encrypted bundle (menu.enc). Access is gated by licenses.json on this
-# same repo: an id must exist there, not be revoked, and — if the seller
-# pre-registered an IP for it — the requesting server's IP must match.
-# There is no live server; the seller sets each license's IP up front
-# (via tools/manage-license.sh) once they know the client's server.
+# encrypted bundle (menu.enc). Access is gated by a license database that
+# lives in a second, unrelated repo (see _fm_licenses_url below): an id
+# must exist there, not be revoked, and — if the seller pre-registered an
+# IP for it — the requesting server's IP must match. There is no live
+# server; the seller sets each license's IP up front (via
+# tools/license-panel.sh) once they know the client's server.
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
 PAYLOAD_URL="$(_fm_gh_raw)/main/menu.enc"
-_FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2ZtL2NvbnRlbnRzL2xpY2Vuc2VzLmpzb24/cmVmPW1haW4="
-_FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0vbWFpbi9saWNlbnNlcy5qc29u"
+_FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2luc3RhbGFzaS9jb250ZW50cy9jb25maWcvcmVnLmpzb24/cmVmPW1haW4="
+_FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vY29uZmlnL3JlZy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
 _fm_licenses_url_fallback() { printf '%s' "$_FM_LIC_FALLBACK_B64" | base64 -d 2>/dev/null; }
 # The payload decryption key doesn't live in this file at all — it's fetched
