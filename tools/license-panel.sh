@@ -88,6 +88,15 @@ else:
 PY
 }
 
+# Legacy compatibility bridge (see BRIDGE_FILE below): any server still
+# running a pre-migration menu.sh hardcodes the OLD fm/licenses.json URL
+# for its self-update license check. Until every known active license has
+# updated past that point, keep this file mirrored on every publish so
+# those old installs see live data instead of a stale one-time snapshot —
+# once you're sure nothing old is left, just delete BRIDGE_FILE and this
+# step becomes a silent no-op.
+BRIDGE_FILE="licenses.json"
+
 git_publish() {
     local msg="$1"
     read -r -p "$(echo -e "  ${C_YELLOW}Push this change to GitHub now? [Y/n]: ${C_RESET}")" ans
@@ -105,6 +114,19 @@ git_publish() {
             sleep $((2**n))
         done
         echo -e "  ${C_GREEN}✅ Pushed. Live in ~1 minute.${C_RESET}"
+
+        if [ -f "$BRIDGE_FILE" ]; then
+            cp -f "$FILE" "$BRIDGE_FILE"
+            git add "$BRIDGE_FILE" >/dev/null 2>&1
+            if ! git diff --cached --quiet -- "$BRIDGE_FILE"; then
+                git commit -q -m "license: sync bridge ($msg)" >/dev/null 2>&1
+                local bn=0
+                until git push origin "$(git branch --show-current)" 2>/dev/null; do
+                    bn=$((bn+1)); [ $bn -ge 4 ] && { echo -e "  ${C_YELLOW}⚠️ Bridge sync push failed — run 'git push' in this repo manually.${C_RESET}"; break; }
+                    sleep $((2**bn))
+                done
+            fi
+        fi
     else
         echo -e "  ${C_GRAY}Not pushed — remember: git -C $DATA_DIR add $DATA_REL_FILE && git -C $DATA_DIR commit && git -C $DATA_DIR push${C_RESET}"
     fi
