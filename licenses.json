@@ -1,0 +1,52 @@
+{
+  "owner": {
+    "ip": "169.58.133.120",
+    "issued": "2026-08-18",
+    "revoked": false
+  },
+  "dahoom": {
+    "ip": "169.58.133.119",
+    "issued": "2026-08-18",
+    "revoked": false
+  },
+  "VIP": {
+    "ip": "169.58.127.51",
+    "issued": "2026-08-18",
+    "revoked": true
+  },
+  "AR": {
+    "ip": "169.58.127.51",
+    "issued": "2026-08-18",
+    "revoked": false
+  },
+  "test": {
+    "ip": "1.1.1.1",
+    "issued": "2026-08-18",
+    "revoked": false
+  },
+  "de": {
+    "ip": "57.131.138.236",
+    "issued": "2026-08-18",
+    "revoked": false
+  },
+  "sa": {
+    "ip": "130.94.57.194",
+    "issued": "2026-08-19",
+    "revoked": false
+  },
+  "66": {
+    "ip": "1.1.1.1",
+    "issued": "2026-08-20",
+    "revoked": false
+  },
+  "55": {
+    "ip": "1.1.1.1",
+    "issued": "2026-08-20",
+    "revoked": false
+  },
+  "44": {
+    "ip": "1.1.1.1",
+    "issued": "2026-08-20",
+    "revoked": false
+  }
+}
