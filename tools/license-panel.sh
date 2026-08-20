@@ -245,6 +245,34 @@ PY
     pause
 }
 
+do_delete() {
+    banner
+    echo -e "  ${C_BOLD}Delete a license ID completely${C_RESET}\n"
+    show_list
+    echo
+    read -r -p "$(echo -e "  ${C_CYAN}License ID to delete: ${C_RESET}")" id
+    [ -n "$id" ] || return
+    if ! python3 -c "import json,sys; sys.exit(0 if '$id' in json.load(open('$FILE')) else 1)" 2>/dev/null; then
+        echo -e "\n  ${C_RED}'${id}' not found.${C_RESET}"; pause; return
+    fi
+    echo -e "\n  ${C_RED}${C_BOLD}This removes '${id}' from the database entirely — not reversible.${C_RESET}"
+    echo -e "  ${C_GRAY}(if you just want to block it, use Revoke instead — it keeps the record.)${C_RESET}"
+    read -r -p "$(echo -e "  ${C_YELLOW}Type the ID again to confirm deletion: ${C_RESET}")" confirm
+    if [ "$confirm" != "$id" ]; then
+        echo -e "\n  ${C_GRAY}Cancelled — confirmation didn't match.${C_RESET}"; pause; return
+    fi
+    python3 - "$FILE" "$id" <<'PY'
+import json, sys
+f, id = sys.argv[1], sys.argv[2]
+d = json.load(open(f))
+d.pop(id, None)
+json.dump(d, open(f, "w"), indent=2, ensure_ascii=False)
+PY
+    echo -e "\n  ${C_GREEN}✅ '${id}' deleted completely.${C_RESET}"
+    git_publish "license: delete ${id}"
+    pause
+}
+
 do_list() {
     banner
     echo -e "  ${C_BOLD}All licenses${C_RESET}\n"
@@ -263,6 +291,7 @@ main_menu() {
         echo -e "  ${C_CYAN}[2]${C_RESET} Revoke a license"
         echo -e "  ${C_CYAN}[3]${C_RESET} Unbind a license (move to new server)"
         echo -e "  ${C_CYAN}[4]${C_RESET} List all licenses"
+        echo -e "  ${C_RED}[5]${C_RESET} Delete a license ID completely"
         echo -e "  ${C_RED}[0]${C_RESET} Exit"
         echo
         if ! read -r -p "$(echo -e "  ${C_ICE}> Select an option: ${C_RESET}")" choice; then
@@ -273,6 +302,7 @@ main_menu() {
             2) do_revoke ;;
             3) do_unbind ;;
             4) do_list ;;
+            5) do_delete ;;
             0) echo -e "\n  ${C_GRAY}Goodbye.${C_RESET}\n"; exit 0 ;;
             *) ;;
         esac
