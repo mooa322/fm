@@ -142,9 +142,14 @@ git_publish() {
             return
         fi
         git -C "$DATA_DIR" commit -q -m "$msg" >/dev/null 2>&1
-        local n=0
-        until git -C "$DATA_DIR" push origin "$(git -C "$DATA_DIR" branch --show-current)" 2>/dev/null; do
-            n=$((n+1)); [ $n -ge 4 ] && { echo -e "  ${C_RED}Push failed after retries. Run 'git -C $DATA_DIR push' manually.${C_RESET}"; return 1; }
+        local n=0 err=""
+        until err="$(git -C "$DATA_DIR" push origin "$(git -C "$DATA_DIR" branch --show-current)" 2>&1)"; do
+            n=$((n+1))
+            if [ $n -ge 4 ]; then
+                echo -e "  ${C_RED}Push failed after retries:${C_RESET}"
+                echo -e "  ${C_GRAY}${err}${C_RESET}"
+                return 1
+            fi
             sleep $((2**n))
         done
         echo -e "  ${C_GREEN}✅ Pushed. Live in ~1 minute.${C_RESET}"
@@ -154,9 +159,14 @@ git_publish() {
             git add "$BRIDGE_FILE" >/dev/null 2>&1
             if ! git diff --cached --quiet -- "$BRIDGE_FILE"; then
                 git commit -q -m "license: sync bridge ($msg)" >/dev/null 2>&1
-                local bn=0
-                until git push origin "$(git branch --show-current)" 2>/dev/null; do
-                    bn=$((bn+1)); [ $bn -ge 4 ] && { echo -e "  ${C_YELLOW}⚠️ Bridge sync push failed — run 'git push' in this repo manually.${C_RESET}"; break; }
+                local bn=0 berr=""
+                until berr="$(git push origin "$(git branch --show-current)" 2>&1)"; do
+                    bn=$((bn+1))
+                    if [ $bn -ge 4 ]; then
+                        echo -e "  ${C_YELLOW}⚠️ Bridge sync push failed:${C_RESET}"
+                        echo -e "  ${C_GRAY}${berr}${C_RESET}"
+                        break
+                    fi
                     sleep $((2**bn))
                 done
             fi
