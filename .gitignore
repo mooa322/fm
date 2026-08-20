@@ -15,3 +15,5 @@ scratch/
 src/
 tools/.worker.env
 tools/.clients.db
+.license-data/
+.license-token

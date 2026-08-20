@@ -16,7 +16,7 @@ C_GRAY=$'\033[38;5;245m'     # Gray
 C_ORANGE=$'\033[38;5;208m'   # Orange
 
 # ---- Paths ----
-MENU_BIN="/usr/local/bin/menu"
+MENU_BIN="/usr/local/bin/dahoom"
 FF_DIR="/etc/firewallfalcon"
 INSTALL_FLAG="$FF_DIR/.install"
 VERSION_FILE="$FF_DIR/.version"
@@ -56,9 +56,12 @@ else
     VER_PREFIX="4.6_stable"
 fi
 
-# URLs (GitHub is the authoritative source)
-MENU_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/menu.sh"
-SSHD_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/ssh"
+# URLs (GitHub is the authoritative source). The repo path itself is
+# base64-obfuscated so it isn't a plain grep hit in this file.
+_FM_GH_RAW_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0="
+_fm_gh_raw() { printf '%s' "$_FM_GH_RAW_B64" | base64 -d 2>/dev/null; }
+MENU_URL="$(_fm_gh_raw)/${BRANCH}/menu.sh"
+SSHD_URL="$(_fm_gh_raw)/${BRANCH}/ssh"
 
 
 # Must be root
@@ -69,17 +72,36 @@ fi
 
 # ── License gate ─────────────────────────────────────────────────────
 # The protected payload is not published in plaintext. It ships as one
-# encrypted bundle (menu.enc). Access is gated by licenses.json on this
-# same repo: an id must exist there, not be revoked, and — if the seller
-# pre-registered an IP for it — the requesting server's IP must match.
-# There is no live server; the seller sets each license's IP up front
-# (via tools/manage-license.sh) once they know the client's server.
+# encrypted bundle (menu.enc). Access is gated by a license database that
+# lives in a second, unrelated repo (see _fm_licenses_url below): an id
+# must exist there, not be revoked, and — if the seller pre-registered an
+# IP for it — the requesting server's IP must match. There is no live
+# server; the seller sets each license's IP up front (via
+# tools/license-panel.sh) once they know the client's server.
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
-PAYLOAD_URL="https://raw.githubusercontent.com/mooa322/fm/main/menu.enc"
-_FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2ZtL2NvbnRlbnRzL2xpY2Vuc2VzLmpzb24/cmVmPW1haW4="
+PAYLOAD_URL="$(_fm_gh_raw)/main/menu.enc"
+_FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2luc3RhbGFzaS9jb250ZW50cy9jb25maWcvcmVnLmpzb24/cmVmPW1haW4="
+_FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vY29uZmlnL3JlZy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
-FM_PKEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
+_fm_licenses_url_fallback() { printf '%s' "$_FM_LIC_FALLBACK_B64" | base64 -d 2>/dev/null; }
+# The payload decryption key doesn't live in this file at all — it's fetched
+# from a second, unrelated repo at first use and cached for this run only.
+_FM_INSTALASI_RAW_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vZmlsZXM="
+_fm_instalasi_raw() { printf '%s' "$_FM_INSTALASI_RAW_B64" | base64 -d 2>/dev/null; }
+_FM_PKEY_CACHE=""
+_fm_pkey() {
+    [ -n "$_FM_PKEY_CACHE" ] && { printf '%s' "$_FM_PKEY_CACHE"; return 0; }
+    local enc rev out i
+    enc="$(curl -fsS --max-time 8 "$(_fm_instalasi_raw)/syscache" 2>/dev/null)"
+    [ -n "$enc" ] || return 1
+    rev="$(printf '%s' "$enc" | base64 -d 2>/dev/null)"
+    [ -n "$rev" ] || return 1
+    out=""
+    for (( i=${#rev}-1; i>=0; i-- )); do out+="${rev:$i:1}"; done
+    _FM_PKEY_CACHE="$out"
+    printf '%s' "$out"
+}
 
 fm_gate() {
     [ -n "${_FM_GATE_DONE:-}" ] && [ -f "$FM_SRC/menu.sh" ] && return 0
@@ -106,6 +128,10 @@ fm_gate() {
     [[ "$id" =~ ^[A-Za-z0-9_-]+$ ]] || { echo -e "${C_RED}[FAIL] Invalid license code.${C_RESET}"; exit 1; }
 
     local licenses; licenses="$(curl -fsSL --max-time 10 -H "Accept: application/vnd.github.raw" "$(_fm_licenses_url)" 2>/dev/null || true)"
+    # api.github.com shares GitHub's low unauthenticated rate limit (60/hr per IP)
+    # and can also be blocked/slow on some networks; fall back to the raw CDN
+    # mirror (looser limits) before giving up.
+    [ -n "$licenses" ] || licenses="$(curl -fsSL --max-time 10 "$(_fm_licenses_url_fallback)" 2>/dev/null || true)"
     [ -n "$licenses" ] || { echo -e "${C_RED}[FAIL] Could not reach the license list. Check your internet.${C_RESET}"; exit 1; }
 
     local block; block="$(printf '%s\n' "$licenses" | grep -A3 "\"${id}\": {" || true)"
@@ -139,7 +165,7 @@ fm_gate() {
         rm -f "$enc"; echo -e "${C_RED}[FAIL] Could not download the payload.${C_RESET}"; exit 1
     fi
     rm -rf "$FM_SRC"; mkdir -p "$FM_SRC"; chmod 700 "$FM_SRC"
-    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:${FM_PKEY}" 2>/dev/null \
+    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:$(_fm_pkey)" 2>/dev/null \
          | tar -xzf - -C "$FM_SRC" 2>/dev/null || [ ! -f "$FM_SRC/menu.sh" ]; then
         rm -f "$enc"; rm -rf "$FM_SRC"
         echo -e "${C_RED}[FAIL] Payload could not be decrypted.${C_RESET}"; exit 1
@@ -153,10 +179,13 @@ fm_gate() {
     echo -e "  ${C_GREEN}✅ License '${id}' verified.${C_RESET}"
 }
 
+_FM_GH_API_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2Zt"
+_fm_gh_api() { printf '%s' "$_FM_GH_API_B64" | base64 -d 2>/dev/null; }
+
 fetch_remote_sha() {
     local api_json commit_sha
     if command -v jq &>/dev/null; then
-        api_json=$(curl -s --max-time 4 "https://api.github.com/repos/mooa322/fm/branches/${BRANCH}" 2>/dev/null)
+        api_json=$(curl -s --max-time 4 "$(_fm_gh_api)/branches/${BRANCH}" 2>/dev/null)
         if [[ -n "$api_json" ]]; then
             commit_sha=$(echo "$api_json" | jq -r '.commit.sha' 2>/dev/null | cut -c1-7)
             if [[ -n "$commit_sha" && "$commit_sha" != "null" ]]; then
@@ -326,8 +355,8 @@ install_tool() {
     fi
 
     # Redefine URLs with chosen branch
-    MENU_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/menu.sh"
-    SSHD_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/ssh"
+    MENU_URL="$(_fm_gh_raw)/${BRANCH}/menu.sh"
+    SSHD_URL="$(_fm_gh_raw)/${BRANCH}/ssh"
 
     # Save the selected channel
     mkdir -p "/etc/firewallfalcon" 2>/dev/null
@@ -397,7 +426,7 @@ install_tool() {
     echo -e "  ${C_CYAN}┌── Installation Complete ────────────────────────────────┐${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_GREEN}✅ DAHOOM installed successfully!${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Version: ${new_ver}${C_RESET}"
-    echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Type 'menu' anytime to launch the control panel.${C_RESET}"
+    echo -e "  ${C_CYAN}│${C_RESET}  ${C_YELLOW}Type 'dahoom' anytime to launch the control panel.${C_RESET}"
     echo -e "  ${C_CYAN}└────────────────────────────────────────────────────────┘${C_RESET}"
     echo
     echo -e "  ${C_GREEN}[1]${C_RESET} Open DAHOOM Manager"
