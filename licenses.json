@@ -33,5 +33,10 @@
     "ip": "130.94.57.194",
     "issued": "2026-08-19",
     "revoked": false
+  },
+  "uwyg": {
+    "ip": "55.1.1.1",
+    "issued": "2026-08-20",
+    "revoked": false
   }
 }
