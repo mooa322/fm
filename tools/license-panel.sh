@@ -78,20 +78,6 @@ ensure_data_repo() {
 }
 ensure_data_repo
 
-# The bridge sync (below) pushes to THIS repo's own origin — make sure it
-# carries the same resolved token, for the same reason as instalasi above.
-_ensure_fm_origin_has_token() {
-    local cur token; cur="$(git remote get-url origin 2>/dev/null || true)"
-    case "$cur" in
-        https://*@github.com/*) return 0 ;;   # already has a credential embedded
-        https://github.com/*) : ;;
-        *) return 0 ;;                         # SSH or something else — leave alone
-    esac
-    token="$(_gh_token)"
-    [ -n "$token" ] && git remote set-url origin "https://${token}@github.com/mooa322/fm" 2>/dev/null || true
-}
-_ensure_fm_origin_has_token
-
 pause() { echo; read -r -p "$(echo -e "  ${C_GRAY}Press Enter to continue...${C_RESET}")" _ || exit 0; }
 
 banner() {
@@ -122,14 +108,12 @@ else:
 PY
 }
 
-# Legacy compatibility bridge (see BRIDGE_FILE below): any server still
-# running a pre-migration menu.sh hardcodes the OLD fm/licenses.json URL
-# for its self-update license check. Until every known active license has
-# updated past that point, keep this file mirrored on every publish so
-# those old installs see live data instead of a stale one-time snapshot —
-# once you're sure nothing old is left, just delete BRIDGE_FILE and this
-# step becomes a silent no-op.
-BRIDGE_FILE="licenses.json"
+# The legacy fm/licenses.json compatibility bridge has been retired —
+# every known server updated past the instalasi migration, so instalasi is
+# now the sole license source. (There used to be a mirror step here; it
+# kept resurrecting a deleted licenses.json whenever a stale local copy of
+# it happened to still be sitting in this checkout, which is exactly what
+# happened — so it's gone for good now instead of file-existence-gated.)
 
 git_publish() {
     local msg="$1"
@@ -153,24 +137,6 @@ git_publish() {
             sleep $((2**n))
         done
         echo -e "  ${C_GREEN}✅ Pushed. Live in ~1 minute.${C_RESET}"
-
-        if [ -f "$BRIDGE_FILE" ]; then
-            cp -f "$FILE" "$BRIDGE_FILE"
-            git add "$BRIDGE_FILE" >/dev/null 2>&1
-            if ! git diff --cached --quiet -- "$BRIDGE_FILE"; then
-                git commit -q -m "license: sync bridge ($msg)" >/dev/null 2>&1
-                local bn=0 berr=""
-                until berr="$(git push origin "$(git branch --show-current)" 2>&1)"; do
-                    bn=$((bn+1))
-                    if [ $bn -ge 4 ]; then
-                        echo -e "  ${C_YELLOW}⚠️ Bridge sync push failed:${C_RESET}"
-                        echo -e "  ${C_GRAY}${berr}${C_RESET}"
-                        break
-                    fi
-                    sleep $((2**bn))
-                done
-            fi
-        fi
     else
         echo -e "  ${C_GRAY}Not pushed — remember: git -C $DATA_DIR add $DATA_REL_FILE && git -C $DATA_DIR commit && git -C $DATA_DIR push${C_RESET}"
     fi
