@@ -34,32 +34,7 @@
     "issued": "2026-08-19",
     "revoked": false
   },
-  "uwyg": {
-    "ip": "55.1.1.1",
-    "issued": "2026-08-20",
-    "revoked": false
-  },
-  "1": {
-    "ip": "1.1.1.1",
-    "issued": "2026-08-20",
-    "revoked": false
-  },
-  "2": {
-    "ip": "11.1.1.1",
-    "issued": "2026-08-20",
-    "revoked": false
-  },
-  "4": {
-    "ip": "11.",
-    "issued": "2026-08-20",
-    "revoked": false
-  },
-  "0": {
-    "ip": "1.1.1.1",
-    "issued": "2026-08-20",
-    "revoked": false
-  },
-  "7": {
+  "66": {
     "ip": "1.1.1.1",
     "issued": "2026-08-20",
     "revoked": false
