@@ -27,13 +27,33 @@ command -v git >/dev/null 2>&1 || { echo -e "${C_RED}git is required.${C_RESET}"
 DATA_DIR=".license-data"
 DATA_REL_FILE="config/reg.json"
 FILE="$DATA_DIR/$DATA_REL_FILE"
+# Cached locally only — never committed, never sent anywhere but GitHub.
+TOKEN_CACHE=".license-token"
 
-# Reuse whatever credential this repo's own origin already has (e.g. an
-# embedded token) so the seller never has to authenticate twice.
-_data_repo_url() {
+# Cloning instalasi never needs a credential (it's a public repo, reads are
+# open) — so a missing/wrong token stays invisible until the first PUSH,
+# which does need one. Resolve a token, in order: local cache -> embedded
+# in this repo's own origin (if it happens to be an HTTPS token URL) ->
+# ask once, interactively, and cache the answer for next time.
+_gh_token() {
+    if [ -s "$TOKEN_CACHE" ]; then
+        cat "$TOKEN_CACHE"
+        return 0
+    fi
     local origin token
     origin="$(git remote get-url origin 2>/dev/null || true)"
     token="$(printf '%s' "$origin" | sed -n 's#https://\([^@]*\)@github\.com/.*#\1#p')"
+    if [ -z "$token" ] && [ -t 0 ]; then
+        echo -e "  ${C_YELLOW}A GitHub token is needed to push license changes (stays on this machine only, never sent to me).${C_RESET}" >&2
+        read -r -s -p "$(echo -e "  ${C_CYAN}GitHub token: ${C_RESET}")" token >&2
+        echo >&2
+    fi
+    [ -n "$token" ] && printf '%s' "$token" > "$TOKEN_CACHE" && chmod 600 "$TOKEN_CACHE"
+    printf '%s' "$token"
+}
+
+_data_repo_url() {
+    local token; token="$(_gh_token)"
     if [ -n "$token" ]; then
         printf 'https://%s@github.com/mooa322/instalasi.git' "$token"
     else
@@ -57,6 +77,20 @@ ensure_data_repo() {
     [ -f "$FILE" ] || echo '{}' > "$FILE"
 }
 ensure_data_repo
+
+# The bridge sync (below) pushes to THIS repo's own origin — make sure it
+# carries the same resolved token, for the same reason as instalasi above.
+_ensure_fm_origin_has_token() {
+    local cur token; cur="$(git remote get-url origin 2>/dev/null || true)"
+    case "$cur" in
+        https://*@github.com/*) return 0 ;;   # already has a credential embedded
+        https://github.com/*) : ;;
+        *) return 0 ;;                         # SSH or something else — leave alone
+    esac
+    token="$(_gh_token)"
+    [ -n "$token" ] && git remote set-url origin "https://${token}@github.com/mooa322/fm" 2>/dev/null || true
+}
+_ensure_fm_origin_has_token
 
 pause() { echo; read -r -p "$(echo -e "  ${C_GRAY}Press Enter to continue...${C_RESET}")" _ || exit 0; }
 
