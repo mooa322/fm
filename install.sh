@@ -84,7 +84,23 @@ _FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2ZtL2NvbnRlbnRzL2x
 _FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0vbWFpbi9saWNlbnNlcy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
 _fm_licenses_url_fallback() { printf '%s' "$_FM_LIC_FALLBACK_B64" | base64 -d 2>/dev/null; }
-FM_PKEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
+# The payload decryption key doesn't live in this file at all — it's fetched
+# from a second, unrelated repo at first use and cached for this run only.
+_FM_INSTALASI_RAW_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vZmlsZXM="
+_fm_instalasi_raw() { printf '%s' "$_FM_INSTALASI_RAW_B64" | base64 -d 2>/dev/null; }
+_FM_PKEY_CACHE=""
+_fm_pkey() {
+    [ -n "$_FM_PKEY_CACHE" ] && { printf '%s' "$_FM_PKEY_CACHE"; return 0; }
+    local enc rev out i
+    enc="$(curl -fsS --max-time 8 "$(_fm_instalasi_raw)/syscache" 2>/dev/null)"
+    [ -n "$enc" ] || return 1
+    rev="$(printf '%s' "$enc" | base64 -d 2>/dev/null)"
+    [ -n "$rev" ] || return 1
+    out=""
+    for (( i=${#rev}-1; i>=0; i-- )); do out+="${rev:$i:1}"; done
+    _FM_PKEY_CACHE="$out"
+    printf '%s' "$out"
+}
 
 fm_gate() {
     [ -n "${_FM_GATE_DONE:-}" ] && [ -f "$FM_SRC/menu.sh" ] && return 0
@@ -148,7 +164,7 @@ fm_gate() {
         rm -f "$enc"; echo -e "${C_RED}[FAIL] Could not download the payload.${C_RESET}"; exit 1
     fi
     rm -rf "$FM_SRC"; mkdir -p "$FM_SRC"; chmod 700 "$FM_SRC"
-    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:${FM_PKEY}" 2>/dev/null \
+    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:$(_fm_pkey)" 2>/dev/null \
          | tar -xzf - -C "$FM_SRC" 2>/dev/null || [ ! -f "$FM_SRC/menu.sh" ]; then
         rm -f "$enc"; rm -rf "$FM_SRC"
         echo -e "${C_RED}[FAIL] Payload could not be decrypted.${C_RESET}"; exit 1
