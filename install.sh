@@ -56,9 +56,12 @@ else
     VER_PREFIX="4.6_stable"
 fi
 
-# URLs (GitHub is the authoritative source)
-MENU_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/menu.sh"
-SSHD_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/ssh"
+# URLs (GitHub is the authoritative source). The repo path itself is
+# base64-obfuscated so it isn't a plain grep hit in this file.
+_FM_GH_RAW_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0="
+_fm_gh_raw() { printf '%s' "$_FM_GH_RAW_B64" | base64 -d 2>/dev/null; }
+MENU_URL="$(_fm_gh_raw)/${BRANCH}/menu.sh"
+SSHD_URL="$(_fm_gh_raw)/${BRANCH}/ssh"
 
 
 # Must be root
@@ -76,7 +79,7 @@ fi
 # (via tools/manage-license.sh) once they know the client's server.
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
-PAYLOAD_URL="https://raw.githubusercontent.com/mooa322/fm/main/menu.enc"
+PAYLOAD_URL="$(_fm_gh_raw)/main/menu.enc"
 _FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2ZtL2NvbnRlbnRzL2xpY2Vuc2VzLmpzb24/cmVmPW1haW4="
 _FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvZm0vbWFpbi9saWNlbnNlcy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
@@ -159,10 +162,13 @@ fm_gate() {
     echo -e "  ${C_GREEN}✅ License '${id}' verified.${C_RESET}"
 }
 
+_FM_GH_API_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2Zt"
+_fm_gh_api() { printf '%s' "$_FM_GH_API_B64" | base64 -d 2>/dev/null; }
+
 fetch_remote_sha() {
     local api_json commit_sha
     if command -v jq &>/dev/null; then
-        api_json=$(curl -s --max-time 4 "https://api.github.com/repos/mooa322/fm/branches/${BRANCH}" 2>/dev/null)
+        api_json=$(curl -s --max-time 4 "$(_fm_gh_api)/branches/${BRANCH}" 2>/dev/null)
         if [[ -n "$api_json" ]]; then
             commit_sha=$(echo "$api_json" | jq -r '.commit.sha' 2>/dev/null | cut -c1-7)
             if [[ -n "$commit_sha" && "$commit_sha" != "null" ]]; then
@@ -332,8 +338,8 @@ install_tool() {
     fi
 
     # Redefine URLs with chosen branch
-    MENU_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/menu.sh"
-    SSHD_URL="https://raw.githubusercontent.com/mooa322/fm/${BRANCH}/ssh"
+    MENU_URL="$(_fm_gh_raw)/${BRANCH}/menu.sh"
+    SSHD_URL="$(_fm_gh_raw)/${BRANCH}/ssh"
 
     # Save the selected channel
     mkdir -p "/etc/firewallfalcon" 2>/dev/null
