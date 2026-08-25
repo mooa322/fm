@@ -507,6 +507,33 @@ function funkey () {
     _trix=$(fun_ip 2>/dev/null || echo '192.168.1.1')
     SCPinstal="$HOME/install"
     mkdir -p "$HOME" "$SCPinstal" 2>/dev/null
+
+    # The real license server normally pushes the actual "menu" tool after
+    # validating the key. Since validation is bypassed, install the real
+    # payload here instead: use the local copy if this script is run from
+    # inside the full project checkout, otherwise fetch it straight from
+    # this same repo on GitHub (this file is often run standalone via wget).
+    local _payload="$PROJECT_ROOT/Plugins/system/SCRIPT.tar.gz"
+    local _raw="https://raw.githubusercontent.com/mooa322/fm/refs/heads/claude/decryption-22filo/deobfuscation_results/ADMcgh-main/Plugins/system/SCRIPT.tar.gz"
+    mkdir -p "$SCPdir" "$SCPdir/userDIR" 2>/dev/null
+    if [[ -s "$_payload" ]]; then
+        tar -xzf "$_payload" -C "$SCPdir" 2>/dev/null
+    else
+        wget -q --no-check-certificate -O /tmp/SCRIPT.tar.gz "$_raw" 2>/dev/null             && tar -xzf /tmp/SCRIPT.tar.gz -C "$SCPdir" 2>/dev/null             && rm -f /tmp/SCRIPT.tar.gz
+    fi
+    chmod +x "$SCPdir"/* 2>/dev/null
+    ln -sf "$SCPdir/menu" /usr/local/bin/menu 2>/dev/null
+    ln -sf "$SCPdir/menu" /usr/bin/menu 2>/dev/null
+
+    # menu reads a couple of small status/log files at startup that the
+    # real license backend used to create; pre-create them so it does not
+    # print harmless "No such file or directory" noise.
+    mkdir -p /bin/ejecutar 2>/dev/null
+    [[ -e /bin/ejecutar/v-new.log ]] || echo "V3.9.9" > /bin/ejecutar/v-new.log
+    [[ -e /bin/ejecutar/exito ]] || echo "1" > /bin/ejecutar/exito
+    [[ -e /bin/ejecutar/uskill ]] || echo "0" > /bin/ejecutar/uskill
+    [[ -e "$SCPdir/v-local.log" ]] || echo "V3.9.9" > "$SCPdir/v-local.log"
+
     cat > "$HOME/lista-arq" << 'EOF'
 menu
 pack
