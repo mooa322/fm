@@ -1,0 +1,9 @@
+{
+  "listen": ":36712",
+  "BostMode": true,
+  "stream_buffer": 209715200,
+  "receive_buffer": 209715200,
+  "auth": {
+    "mode": "passwords"
+  }
+}
