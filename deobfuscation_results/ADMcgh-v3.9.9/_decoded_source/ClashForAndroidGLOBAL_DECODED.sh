@@ -20,8 +20,10 @@ fun_ip () {
 local _netCAT="$(netstat -tunlp)"
 trojanport=`echo -e "${_netCAT}" | grep tcp | awk '/trojan/ && /0.0.0.0:/ {print substr($4, 9)}' | head -1`;
 [[ -z ${trojanport} ]] && {
+[[ -e /usr/local/etc/trojan/config.json ]] && {
 trojanport=$(cat /usr/local/etc/trojan/config.json | jq -r .local_port)
 troport=$(cat /usr/local/etc/trojan/config.json | jq -r .local_port)
+}
 } || troport=${trojanport}
 _SFTP="$(lsof -V -i tcp -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND" | grep "LISTEN" | grep apache2)"
 [[ -z ${_SFTP} ]] && _SFTP="$(lsof -V -i tcp -P -n | grep -v "ESTABLISHED" |grep -v "COMMAND" | grep "LISTEN" | grep nginx)"

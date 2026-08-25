@@ -7245,16 +7245,16 @@ ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 systemctl restart systemd-resolved
 echo -e "Instalando paquetes Necesarios, espere... "
 sleep 1
-apt-get install python-pip -y 1>/dev/null 2>/dev/null &
+apt-get install python3-pip -y 1>/dev/null 2>/dev/null &
 apt-get install libevent-dev -y 1>/dev/null 2>/dev/null &
-apt-get install python-gevent -y 1>/dev/null 2>/dev/null &
+apt-get install python3-gevent -y 1>/dev/null 2>/dev/null &
 apt-get install python-daemon -y 1>/dev/null 2>/dev/null &
 git clone https://github.com/henices/Tcp-DNS-proxy.git 1>/dev/null 2>/dev/null &
 cd Tcp-DNS-proxy/
 wget https://raw.githubusercontent.com/serverdensity/python-daemon/master/daemon.py
 chmod +x ./install.sh
 ./install.sh
-screen -dmS tcpdns python tcpdns.py -f tcpdns.json.example
+screen -dmS tcpdns python3 tcpdns.py -f tcpdns.json.example
 cd /root
 echo -e "TCP DNS Instalado"
 echo -e "\033[1;31mPRESIONE ENTER PARA CONTINUAR\033[0m"
@@ -7712,7 +7712,7 @@ local slowpid=$(echo -e "${_ps}" | grep -w "dns-server" | grep -v "grep" | awk -
 local ssssrr=`ps -ef |grep -v grep | grep server.py |awk '{print $2}'`
 [[ ! -z "${ssssrr}" ]] && cc="\033[1;32m" || cc="\033[1;31m"
 [[ -d /usr/local/shadowsocksr ]] && { 
-local user_info=$(cd /usr/local/shadowsocksr &> /dev/null  && python mujson_mgr.py -l )
+local user_info=$(cd /usr/local/shadowsocksr &> /dev/null  && python3 mujson_mgr.py -l )
 local user_t="\033[1;33m$(echo "${user_info}"|wc -l) Cts" 
 } || user_t="\033[1;31m[OFF]"
 [[ `grep -c "^#ADM" /etc/sysctl.conf` -eq 0 ]] && _tcpd="\033[1;31m[OFF]" || _tcpd="${_on} "
@@ -8519,8 +8519,8 @@ echo -e "\033[1;31mINSTALACION FINALIZADA - PRESIONE ENTER\033[0m"
 read -p " "
 }
 function removerpython(){
-killall python
-pkill python
+killall python python3 2>/dev/null
+pkill python; pkill python3
 clear
 echo -e "\033[1;37m  Desinstalacion Completa \033[0m"
 echo -e "\033[1;31mINSTALACION FINALIZADA - PRESIONE ENTER\033[0m"

@@ -30,6 +30,19 @@ link="$PROJECT_ROOT/Repositorios/$List_SRC.list"  # BYPASS: local copy instead o
 case $List_SRC in
 8*|9*|10*|11*|12*|16.04*|18.04*|20.04*|20.10*|21.04*|21.10*|22.04*) [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
 [[ -s "$link" ]] && cp "$link" /etc/apt/sources.list;;
+24.04*)
+    # UBUNTU 24.04 SUPPORT: Ubuntu 24.04+ ships its default sources in the
+    # new DEB822 format at /etc/apt/sources.list.d/ubuntu.sources, leaving
+    # /etc/apt/sources.list as an empty stub. Classic sources.list is still
+    # read by apt if it has content, so we still write our classic-format
+    # list there -- but we also disable ubuntu.sources first (rename aside)
+    # to avoid every repo being listed twice (duplicate source warnings).
+    [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
+    if [[ -e /etc/apt/sources.list.d/ubuntu.sources && ! -e /etc/apt/sources.list.d/ubuntu.sources.back ]]; then
+        mv /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.back
+    fi
+    [[ -s "$link" ]] && cp "$link" /etc/apt/sources.list
+    ;;
 *) echo "No se actualiza la lista de repositorios para esta versión."
 return 1;;
 esac
@@ -152,6 +165,9 @@ msg -bar3
 echo -e "\033[94m    ${TTcent} UPDATE DATE : $(date +"%d/%m/%Y") & TIME : $(date +"%H:%M") ${TTcent}" | pv -qL 80
 [[ $(dpkg --get-selections|grep -w "net-tools"|head -1) ]] || _sleepColor '' 'apt-get -qq install net-tools -y'
 [[ $(dpkg --get-selections|grep -w "boxes"|head -1) ]] || _sleepColor '' 'apt-get -qq install boxes -y'
+# UBUNTU 24.04 FIX: menu uses `screen` to keep several background services
+# (Psiphon, BadVPN, ...) alive, but never installs it itself.
+[[ $(dpkg --get-selections|grep -w "screen"|head -1) ]] || _sleepColor '' 'apt-get -qq install screen -y'
 msg -bar3
 echo -e "\033[94m    ${TTcent} INSTALANDO NUEVO PAQUETES ( S|P|C )    ${TTcent}" | pv -qL 80 && _sleepColor '' 'apt-get install software-properties-common -y'
 msg -bar3
@@ -415,6 +431,30 @@ function funkey () {
     # scripts/binaries -- extract it into the same place if present.
     [[ -s "$SCPdir/file.tar" ]] && tar -xf "$SCPdir/file.tar" -C "$SCPdir" 2>/dev/null
     chmod +x "$SCPdir"/* 2>/dev/null
+
+    # UBUNTU 24.04 COMPATIBILITY: menu/UDP_menu.sh/budp.sh/
+    # ClashForAndroidGLOBAL.sh ship self-obfuscated (base64+gzip/bzip2,
+    # eval'd at runtime) -- their raw text cannot be edited directly. We
+    # fully decoded each one and fixed real Python-2-package breakage
+    # (python-pip/python-gevent no longer exist on modern Ubuntu; bare
+    # `python` calls need to be `python3`). Deploy the readable, patched
+    # versions in place of the obfuscated originals when we have them.
+    if [[ -d "$PROJECT_ROOT/_decoded_source" ]]; then
+        for _df in menu:menu UDP_menu:UDP_menu.sh budp:budp.sh ClashForAndroidGLOBAL:ClashForAndroidGLOBAL.sh; do
+            _src="$PROJECT_ROOT/_decoded_source/${_df%%:*}_DECODED.sh"
+            _dst_name="${_df##*:}"
+            [[ -s "$_src" ]] || continue
+            bash -n "$_src" &>/dev/null || continue  # never deploy anything that fails a syntax check
+            [[ -e "$SCPdir/$_dst_name" ]] && cp "$_src" "$SCPdir/$_dst_name"
+            [[ -e "/etc/ADMcgh/bin/$_dst_name" ]] && cp "$_src" "/etc/ADMcgh/bin/$_dst_name"
+        done
+        # ClashForAndroidGLOBAL.sh also lives inside Extras-ScriptCGH/HTools/CLASH/
+        _clash_dst="$PROJECT_ROOT/Extras-ScriptCGH/HTools/CLASH/ClashForAndroidGLOBAL.sh"
+        _clash_src="$PROJECT_ROOT/_decoded_source/ClashForAndroidGLOBAL_DECODED.sh"
+        [[ -s "$_clash_src" ]] && bash -n "$_clash_src" &>/dev/null && [[ -e "$_clash_dst" ]] && cp "$_clash_src" "$_clash_dst"
+    fi
+    chmod +x "$SCPdir"/* 2>/dev/null
+
     ln -sf "$SCPdir/menu" /usr/local/bin/menu 2>/dev/null
     ln -sf "$SCPdir/menu" /usr/bin/menu 2>/dev/null
 
@@ -424,6 +464,11 @@ function funkey () {
     [[ -e /bin/ejecutar/uskill ]] || echo "0" > /bin/ejecutar/uskill
     [[ -e "$SCPdir/v-local.log" ]] || echo "V3.9.9" > "$SCPdir/v-local.log"
     echo 'bypass' > /etc/cghkey 2>/dev/null
+
+    # /bin/autoboot is never created by menu itself (only ever appended to
+    # or sed-edited) -- several features (Psiphon, BadVPN persistence...)
+    # assume it already exists. Seed it as an empty, executable script.
+    [[ -e /bin/autoboot ]] || { printf '#!/bin/bash\n' > /bin/autoboot; chmod +x /bin/autoboot; }
 
     # menu (v3.9.9) expects a FULL copy of the payload at /etc/ADMcgh/bin/
     # (a separate runtime directory from $SCPdir) -- not just styles.cpp.
