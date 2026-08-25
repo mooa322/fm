@@ -476,6 +476,20 @@ function funkey () {
     _trix=$(fun_ip 2>/dev/null || echo '192.168.1.1')
     SCPinstal="$HOME/install"
     mkdir -p "$HOME" "$SCPinstal" 2>/dev/null
+
+    # The real license server normally pushes the actual "menu" tool
+    # (SCRIPT.tar.gz payload) after validating the key. Since validation
+    # is bypassed, install the payload bundled locally in this repo instead
+    # so the tool is actually usable, not just an empty pass-through.
+    local _payload="$PROJECT_ROOT/Plugins/system/SCRIPT.tar.gz"
+    if [[ -s "$_payload" ]]; then
+        mkdir -p "$SCPdir" "$SCPdir/userDIR" 2>/dev/null
+        tar -xzf "$_payload" -C "$SCPdir" 2>/dev/null
+        chmod +x "$SCPdir"/* 2>/dev/null
+        ln -sf "$SCPdir/menu" /usr/local/bin/menu 2>/dev/null
+        ln -sf "$SCPdir/menu" /usr/bin/menu 2>/dev/null
+    fi
+
     cat > "$HOME/lista-arq" << 'EOF'
 menu
 pack
