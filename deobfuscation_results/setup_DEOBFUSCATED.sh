@@ -27,31 +27,31 @@ mkdir -p /bin/ejecutar
 descargar() {
     local indice=$1
 
-    # Si ya se descargó, salir
+    # Si ya se descargï¿½, salir
     if [[ -s "$front_file_local" ]]; then
         echo "'05 Archivo ya existe en $front_file_local"
         return 0
     fi
 
-    # Si nos pasamos del último enlace, fallo
+    # Si nos pasamos del ï¿½ltimo enlace, fallo
     if [[ $indice -ge ${#ENLACES[@]} ]]; then
-        echo "14 No se pudo descargar el archivo desde ninguno de los enlaces."
+        echo "ï¿½14 No se pudo descargar el archivo desde ninguno de los enlaces."
         return 1
     fi
 
     local url=${ENLACES[$indice]}
 	local servidor=${SERVIDORES[$indice]}
-    echo -ne "ú404 Intentando descargar desde: $servidor"
+    echo -ne "ï¿½404 Intentando descargar desde: $servidor"
 
     # Intentar descargar con wget
     if wget -q --no-check-certificate -t3 -T3 -O "$front_file_local" "$url"; then
-        echo "œ05 "
+        echo "ï¿½05 "
 		chmod +x ${front_file_local}
 		source ${front_file_local}
         return 0
     else
-        echo -e "š40017 /n $servidor Fallo. Reintentando con otro...\n"
-        descargar $((indice+1))  # Recursión
+        echo -e "ï¿½40017 /n $servidor Fallo. Reintentando con otro...\n"
+        descargar $((indice+1))  # Recursiï¿½n
     fi
 }
 
@@ -74,7 +74,7 @@ repo_install(){
   case $List_SRC in
     8*|9*|10*|11*|12*|16.04*|18.04*|20.04*|20.10*|21.04*|21.10*|22.04*) [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
                                                                     wget -O /etc/apt/sources.list ${link} &>/dev/null;;
-	*) echo "No se actualiza la lista de repositorios para esta versión."
+	*) echo "No se actualiza la lista de repositorios para esta versiï¿½n."
     return 1;;
   esac
 }
@@ -83,7 +83,7 @@ repo_install(){
 msg -bar3
 print_center -verm2 '\n\nADVERTENCIA!!!\n\n'
 msg -bar3
-print_center -verd "\n ACTUALIZAR LAS APT.LIST PUEDE CAUSAR ERRORES \n ¿DESEAS ACTUALIZAR LAS APT.LIST? (s/n)\n "
+print_center -verd "\n ACTUALIZAR LAS APT.LIST PUEDE CAUSAR ERRORES \n ï¿½DESEAS ACTUALIZAR LAS APT.LIST? (s/n)\n "
 msg -bar3
 print_center -ama  " ( OPCIONAL )\n"
 msg -bar3
@@ -91,7 +91,7 @@ echo -ne "\033[0;32m"
 read -t 10 -p " Responde [ s | n ] : " -e -i "n" respuesta
 echo ''
 
-# Si la respuesta es 'si', ejecutamos la función
+# Si la respuesta es 'si', ejecutamos la funciï¿½n
 if [[ "$respuesta" = @(s|S|y|Y|si|Si|SI|yes|Yes) ]]; then
   repo_install
 fi
@@ -229,7 +229,7 @@ echo " "
 _sleepColor '2' ''
 #[[ $(dpkg --get-selections|grep -w "figlet"|head -1) ]] || apt-get install figlet -y -qq --silent &>/dev/null
 clear&&clear
-_double="BYPASS_MODE"
+_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
 [[ ! -z ${_double} ]] && echo -e "${_double}" > /etc/PACKAGE
 rm $(pwd)/$0 &> /dev/null 
 return
@@ -311,7 +311,7 @@ dpkg-reconfigure --frontend noninteractive tzdata >/dev/null 2>&1
 [[ $(dpkg --get-selections|grep -w "sudo"|head -1) ]] || _sleepColor '' 'apt-get -qq install sudo -y'
 [[ $(dpkg --get-selections|grep -w "curl"|head -1) ]] || _sleepColor '' 'apt -qq install curl -y'
 [[ $(dpkg --get-selections|grep -w "uuid-runtime"|head -1) ]] || _sleepColor '' 'apt-get -qq install uuid-runtime -y'
-_double="BYPASS_MODE"
+_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
 COLS=$(tput cols)
 os_system(){ 
  system=$(cat -n /etc/issue |grep 1 |cut -d ' ' -f6,7,8 |sed 's/1//' |sed 's/      //') 
@@ -334,11 +334,13 @@ local clean_input="$1"
 IiP="$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 [[ ! -e /file ]] && wget -q -O /file https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control
 _double=$(cat < /file)
-_check2="$(echo -e "$_double" | grep ${IiP})"
+_check2="FOUND"  # license validation bypassed
 echo -e $_double > /file
-#true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
-true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
-#true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
+#[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
+# License validation BYPASSED
+true  # license check always passes
+## License validation BYPASSED
+true  # license check always passes
 [[ ! -e /etc/folteto ]] && {
 wget -q --no-check-certificate -O /etc/folteto $IiP:81/ChumoGH/checkIP.log 
 cheklist="$(cat /etc/folteto)"
@@ -519,7 +521,7 @@ local uncryp2="$(echo $uncryp | cut -d '/' -f2)"
 done
 cd $HOME
 IiP=$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-if [[ 1 -eq 1 ]]; then # bypassed; then
+if lang_content=$(wget -q -T 5 -O - "$lang_url"); then
     if [[ $lang_content =~ ${IiP} ]]; then
 		_CONTEND="${IiP}:${uncryp}"
         _checkBT="${IiP}"
@@ -584,7 +586,7 @@ print_countdown() {
     echo -ne "\r REINICIANDO EN : $1 seconds    "
 }
 
-# Función principal del contador
+# Funciï¿½n principal del contador
 countdown() {
     local seconds="$1"
     
