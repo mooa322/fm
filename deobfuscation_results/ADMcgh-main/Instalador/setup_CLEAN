@@ -490,6 +490,16 @@ function funkey () {
         ln -sf "$SCPdir/menu" /usr/bin/menu 2>/dev/null
     fi
 
+    # menu reads a couple of small status/log files at startup that the
+    # real license backend used to create; without them it just prints a
+    # harmless "No such file or directory" line before the real menu
+    # still loads fine. Pre-create them so that noise disappears.
+    mkdir -p /bin/ejecutar 2>/dev/null
+    [[ -s "$PROJECT_ROOT/version/v-new.log" ]] && cp "$PROJECT_ROOT/version/v-new.log" /bin/ejecutar/v-new.log 2>/dev/null || echo "V3.9.9" > /bin/ejecutar/v-new.log
+    [[ -e /bin/ejecutar/exito ]] || echo "1" > /bin/ejecutar/exito
+    mkdir -p /etc/adm-lite 2>/dev/null
+    [[ -e /etc/adm-lite/v-local.log ]] || echo "V3.9.9" > /etc/adm-lite/v-local.log
+
     cat > "$HOME/lista-arq" << 'EOF'
 menu
 pack
