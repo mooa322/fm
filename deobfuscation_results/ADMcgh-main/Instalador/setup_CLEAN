@@ -12,54 +12,22 @@ set -o pipefail
 killall apt apt-get &> /dev/null
 export DEBIAN_FRONTEND=noninteractive
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games/
-front_file_local='/bin/ejecutar/msg'
-ENLACES=(
-    "https://plus.ltmcgh.site/ChumoGH/msg"
-    "https://www.dropbox.com/scl/fi/je70qpfmwu6416ail48zq/msg?rlkey=jg8eazt0p95pkq0xj4ckrrt1y"
-	"https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/styles.cpp"
-)
-SERVIDORES=(
-    "GitHUB"
-    "DropBox"
-    "ChumoGH SIte"
-)
-mkdir -p /bin/ejecutar
-descargar() {
-    local indice=$1
 
-    # Si ya se descarg�, salir
-    if [[ -s "$front_file_local" ]]; then
-        echo "'05 Archivo ya existe en $front_file_local"
-        return 0
-    fi
+# LOCAL PROJECT ROOT: no external downloads for the core UI library.
+# (previously this block downloaded "msg" from plus.ltmcgh.site / Dropbox /
+#  raw.githubusercontent.com/ChumoGH/ADMcgh -- now it loads the bundled
+#  local copy shipped inside this repository, no network dependency)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" &>/dev/null && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." &>/dev/null && pwd)"
+front_file_local="$PROJECT_ROOT/Plugins/system/styles.cpp"
 
-    # Si nos pasamos del �ltimo enlace, fallo
-    if [[ $indice -ge ${#ENLACES[@]} ]]; then
-        echo "�14 No se pudo descargar el archivo desde ninguno de los enlaces."
-        return 1
-    fi
-
-    local url=${ENLACES[$indice]}
-	local servidor=${SERVIDORES[$indice]}
-    echo -ne "�404 Intentando descargar desde: $servidor"
-
-    # Intentar descargar con wget
-    if wget -q --no-check-certificate -t3 -T3 -O "$front_file_local" "$url"; then
-        echo "�05 "
-		chmod +x ${front_file_local}
-		source ${front_file_local}
-        return 0
-    else
-        echo -e "�40017 /n $servidor Fallo. Reintentando con otro...\n"
-        descargar $((indice+1))  # Recursi�n
-    fi
-}
-
-if [[ ! -s "$front_file_local" ]]; then
-    descargar 0
+if [[ -s "$front_file_local" ]]; then
+    chmod +x "$front_file_local" 2>/dev/null
+    source "$front_file_local"
 else
-    chmod +x ${front_file_local}
-	source ${front_file_local}
+    echo "ERROR: no se encontro la libreria local de interfaz en: $front_file_local"
+    echo "Verifica que el repositorio se haya clonado completo (carpeta Plugins/system/)."
+    exit 1
 fi
 
 repo_install(){
@@ -70,10 +38,11 @@ repo_install(){
  Ubuntu)List_SRC=$(echo $system|awk '{print $2}'|cut -d '.' -f1,2);; 
  esac 
 
-  link="https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Repositorios/$List_SRC.list"
+  # Local project copy instead of downloading from ChumoGH/ADMcgh on GitHub
+  link="$PROJECT_ROOT/Repositorios/$List_SRC.list"
   case $List_SRC in
     8*|9*|10*|11*|12*|16.04*|18.04*|20.04*|20.10*|21.04*|21.10*|22.04*) [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
-                                                                    wget -O /etc/apt/sources.list ${link} &>/dev/null;;
+                                                                    [[ -s "$link" ]] && cp "$link" /etc/apt/sources.list;;
 	*) echo "No se actualiza la lista de repositorios para esta versi�n."
     return 1;;
   esac
@@ -320,9 +289,9 @@ os_system(){
  Debian)vercion=$(echo $system|awk '{print $3}'|cut -d '.' -f1);; 
  Ubuntu)vercion=$(echo $system|awk '{print $2}'|cut -d '.' -f1,2);; 
  esac 
- link="https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Repositorios/${vercion}.list" 
+ link="$PROJECT_ROOT/Repositorios/${vercion}.list" # local copy, unused branch (kept commented as in original)
  #case $vercion in 
- #8|9|10|11|16.04|18.04|20.04|20.10|21.04|21.10|22.04)wget -O /etc/apt/sources.list ${link} &>/dev/null;; 
+ #8|9|10|11|16.04|18.04|20.04|20.10|21.04|21.10|22.04) cp "${link}" /etc/apt/sources.list &>/dev/null;; 
  #esac 
 }
 
