@@ -99,7 +99,7 @@ fi
 #apt update 
 #apt list --upgradable
 #apt upgrade -y
-lang_url='https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control'
+lang_url=''; # VALIDATION DISABLED
 rm "$0" &>/dev/null
 script_name=$(basename "$0") &>/dev/null
 rm -f $(pwd)/${script_name} &>/dev/null
@@ -229,7 +229,7 @@ echo " "
 _sleepColor '2' ''
 #[[ $(dpkg --get-selections|grep -w "figlet"|head -1) ]] || apt-get install figlet -y -qq --silent &>/dev/null
 clear&&clear
-_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
+_double='BYPASS'  # validation disabled
 [[ ! -z ${_double} ]] && echo -e "${_double}" > /etc/PACKAGE
 rm $(pwd)/$0 &> /dev/null 
 return
@@ -311,7 +311,7 @@ dpkg-reconfigure --frontend noninteractive tzdata >/dev/null 2>&1
 [[ $(dpkg --get-selections|grep -w "sudo"|head -1) ]] || _sleepColor '' 'apt-get -qq install sudo -y'
 [[ $(dpkg --get-selections|grep -w "curl"|head -1) ]] || _sleepColor '' 'apt -qq install curl -y'
 [[ $(dpkg --get-selections|grep -w "uuid-runtime"|head -1) ]] || _sleepColor '' 'apt-get -qq install uuid-runtime -y'
-_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
+_double='BYPASS'  # validation disabled
 COLS=$(tput cols)
 os_system(){ 
  system=$(cat -n /etc/issue |grep 1 |cut -d ' ' -f6,7,8 |sed 's/1//' |sed 's/      //') 
@@ -332,13 +332,13 @@ clear
 #Key="$(cat /etc/cghkey)"
 local clean_input="$1"
 IiP="$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-[[ ! -e /file ]] && wget -q -O /file https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control
-_double=$(cat < /file)
-_check2="$(echo -e "$_double" | grep ${IiP})"
+[[ ! -e /file ]] && echo 'BYPASS' > /file  # validation disabled
+_double='BYPASS'  # validation disabled
+_check2='FOUND'  # validation disabled
 echo -e $_double > /file
-#[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
-[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
-#[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
+#true  # validation disabled
+true  # validation disabled
+#true  # validation disabled
 [[ ! -e /etc/folteto ]] && {
 wget -q --no-check-certificate -O /etc/folteto $IiP:81/ChumoGH/checkIP.log 
 cheklist="$(cat /etc/folteto)"
@@ -491,31 +491,26 @@ exit&&exit
 }
 
 function funkey () {
-    # License validation completely bypassed
-    
-    IiP="192.168.1.1"
-    _CONTEND="BYPASS"
-    _checkBT="192.168.1.1"
-    _key="bypass"
-    new_id=$(uuidgen 2>/dev/null || echo "bypass")
-    _sys="Linux"
-    clean_input="BYPASS"
-    uncryp="BYPASS"
-    uncryp2="BYPASS"
-    _trix=$(fun_ip 2>/dev/null || echo "192.168.1.1")
+    # LICENSING DISABLED - BYPASS COMPLETE
+    IiP='192.168.1.1'
+    _CONTEND='BYPASS'
+    _checkBT='192.168.1.1'
+    _key='bypass'
+    new_id=$(uuidgen 2>/dev/null || echo 'bypass')
+    _sys='Linux'
+    clean_input='BYPASS'
+    uncryp='BYPASS'
+    uncryp2='BYPASS'
+    _trix=$(fun_ip 2>/dev/null || echo '192.168.1.1')
     SCPinstal="$HOME/install"
-    
     mkdir -p "$HOME" "$SCPinstal" 2>/dev/null
     cat > "$HOME/lista-arq" << 'EOF'
 menu
 pack
 setup
 EOF
-    
-    # Skip to next section
     return 0
 }
-
 [[ -e /etc/PACKAGE ]] || update_pak
 clear&&clear
 rutaSCRIPT ${distro} ${vercion}
