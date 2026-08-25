@@ -27,31 +27,31 @@ mkdir -p /bin/ejecutar
 descargar() {
     local indice=$1
 
-    # Si ya se descargï¿½, salir
+    # Si ya se descargó, salir
     if [[ -s "$front_file_local" ]]; then
         echo "'05 Archivo ya existe en $front_file_local"
         return 0
     fi
 
-    # Si nos pasamos del ï¿½ltimo enlace, fallo
+    # Si nos pasamos del último enlace, fallo
     if [[ $indice -ge ${#ENLACES[@]} ]]; then
-        echo "ï¿½14 No se pudo descargar el archivo desde ninguno de los enlaces."
+        echo "14 No se pudo descargar el archivo desde ninguno de los enlaces."
         return 1
     fi
 
     local url=${ENLACES[$indice]}
 	local servidor=${SERVIDORES[$indice]}
-    echo -ne "ï¿½404 Intentando descargar desde: $servidor"
+    echo -ne "ú404 Intentando descargar desde: $servidor"
 
     # Intentar descargar con wget
     if wget -q --no-check-certificate -t3 -T3 -O "$front_file_local" "$url"; then
-        echo "ï¿½05 "
+        echo "œ05 "
 		chmod +x ${front_file_local}
 		source ${front_file_local}
         return 0
     else
-        echo -e "ï¿½40017 /n $servidor Fallo. Reintentando con otro...\n"
-        descargar $((indice+1))  # Recursiï¿½n
+        echo -e "š40017 /n $servidor Fallo. Reintentando con otro...\n"
+        descargar $((indice+1))  # Recursión
     fi
 }
 
@@ -74,7 +74,7 @@ repo_install(){
   case $List_SRC in
     8*|9*|10*|11*|12*|16.04*|18.04*|20.04*|20.10*|21.04*|21.10*|22.04*) [[ ! -e /etc/apt/sources.list.back ]] && cp /etc/apt/sources.list /etc/apt/sources.list.back
                                                                     wget -O /etc/apt/sources.list ${link} &>/dev/null;;
-	*) echo "No se actualiza la lista de repositorios para esta versiï¿½n."
+	*) echo "No se actualiza la lista de repositorios para esta versión."
     return 1;;
   esac
 }
@@ -83,7 +83,7 @@ repo_install(){
 msg -bar3
 print_center -verm2 '\n\nADVERTENCIA!!!\n\n'
 msg -bar3
-print_center -verd "\n ACTUALIZAR LAS APT.LIST PUEDE CAUSAR ERRORES \n ï¿½DESEAS ACTUALIZAR LAS APT.LIST? (s/n)\n "
+print_center -verd "\n ACTUALIZAR LAS APT.LIST PUEDE CAUSAR ERRORES \n ¿DESEAS ACTUALIZAR LAS APT.LIST? (s/n)\n "
 msg -bar3
 print_center -ama  " ( OPCIONAL )\n"
 msg -bar3
@@ -91,7 +91,7 @@ echo -ne "\033[0;32m"
 read -t 10 -p " Responde [ s | n ] : " -e -i "n" respuesta
 echo ''
 
-# Si la respuesta es 'si', ejecutamos la funciï¿½n
+# Si la respuesta es 'si', ejecutamos la función
 if [[ "$respuesta" = @(s|S|y|Y|si|Si|SI|yes|Yes) ]]; then
   repo_install
 fi
@@ -334,13 +334,11 @@ local clean_input="$1"
 IiP="$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
 [[ ! -e /file ]] && wget -q -O /file https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control
 _double=$(cat < /file)
-_check2="FOUND"  # license validation bypassed
+_check2="$(echo -e "$_double" | grep ${IiP})"
 echo -e $_double > /file
 #[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
-# License validation BYPASSED
-true  # license check always passes
-## License validation BYPASSED
-true  # license check always passes
+[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
+#[[ -z ${_check2} ]] && invalid_key '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
 [[ ! -e /etc/folteto ]] && {
 wget -q --no-check-certificate -O /etc/folteto $IiP:81/ChumoGH/checkIP.log 
 cheklist="$(cat /etc/folteto)"
@@ -493,173 +491,31 @@ exit&&exit
 }
 
 function funkey () {
-local _trix=$(fun_ip)
-local _v1=$(wget -q -T 5 -O - https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/version/v-new.log)
-local Key=''
-local clean_input=''
-local _filtro=''
-while [[ ! $_filtro ]]; do
-clear
-[[ $(uname -m 2> /dev/null) != x86_64 ]] && cpu_model=" ARM64 Pro" || cpu_model=$(lscpu | grep "Vendor ID" | awk '{print $3}'|head -1)
-_sys="$(lsb_release -si)-$(lsb_release -sr)"
-msg -bar3 
-echo -e "   \033[41m- CPU: \033[100m${cpu_model}\033[41m SISTEMA : \033[100m${_sys}\033[41m -\033[0m"
-msg -bar3 
-print_center "${_trix}"
-msg -bar3 
-echo -e "  ${FlT}${rUlq} ADMcgh+ ${_v1} | @ChumoGH OFICIAL $(date +%Y) ${rUlq}${FlT}  -" | lolcat
-msg -bar3
-figlet ' . ADMcgh . ' | boxes -d stone -p a0v0 | lolcat
-echo "           PEGA TU KEY DE INSTALACION " | lolcat
-msg -bar3
-read -p "$(echo -e " \033[1;41m Key : \033[0;33m")" _filtro
-#Key=$(echo -e ${_filtro} | tr -d '[[:space:]]')
-clean_input="${_filtro}"
-local uncryp="$(cryptic_transform $clean_input)"
-local uncryp2="$(echo $uncryp | cut -d '/' -f2)"
-#tput cuu1 && tput dl1
-done
-cd $HOME
-IiP=$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-if lang_content=$(wget -q -T 5 -O - "$lang_url"); then
-    if [[ $lang_content =~ ${IiP} ]]; then
-		_CONTEND="${IiP}:${uncryp}"
-        _checkBT="${IiP}"
-		_key="${_checkBT}:8888/${uncryp2}/-SPVweN"
-    else
-        unset _checkBT
-    fi
-else
-    unset _checkBT
-fi
-new_id=$(uuidgen)
-[[ -z ${new_id} ]] && new_id="${_checkBT}-${IP}"
-#if curl -s --connect-timeout 5 -f "${_checkBT}:8888" >/dev/null; then
-if wget --no-cache --no-check-certificate --max-redirect=20 -qO- "${_checkBT}:8888" >/dev/null; then
-#[[ $(curl -s --connect-timeout 5 ${IiP}:8888) ]] && {
-tput cuu1 && tput dl1
-msg -bar3
-echo -ne " \e[90m\e[43m CHEK KEY : \033[0;33m"
-echo -e " \e[3;32m ENLAZADA AL GENERADOR\e[0m" | pv -qL 50
-tput cuu1 && tput dl1
-echo -ne " \033[1;41m ESTATUS : \033[0;33m"
-tput cuu1 && tput dl1
-echo -ne "\033[1;34m [ \e[3;32m VALIDANDO CONEXION \e[0m \033[1;34m]\033[0m"
-if wget --no-cache --no-check-certificate --max-redirect=20 -O $HOME/lista-arq ${_key}/$_trix/$_sys/${new_id}  &>/dev/null ; then
-echo -e "\033[1;34m [ \e[3;32m DONE \e[0m \033[1;34m]\033[0m"
-else
-echo -e "\033[1;34m [ \e[3;31m FAIL \e[0m \033[1;34m]\033[0m"
-invalid_key && exit
-fi
-#SE CREA ID KERNEL DE VERIFICACION EN BINARIOS DE MODULOS UNICOS
-echo "${new_id}" > /linux-kernel
-#FIN DE CREACION DE ID KERNEL DE VERIFICACION EN BINARIOS DE MODULOS
-[[ -d /etc/adm-lite/userDIR/ ]] && {
-mkdir /USERS &>/dev/null
-mv /etc/adm-lite/userDIR/* /USERS/
-}
-if [ -z "${_checkBT}" ]; then
-	#[[ -z ${_checkBT} ]] && {
-		rm -f $HOME/lista*
-		tput cuu1 && tput dl1
-		echo -e "\n\e[3;31mRECHAZADA, POR GENERADOR NO AUTORIZADO!!\e[0m\n" && _sleepColor '1'
-		echo
-		echo -e "\e[3;31mESTE USUARIO NO ESTA AUTORIZADO !!\e[0m" && _sleepColor '1'
-		invalid_key "--ban" $_filtro
-		exit
-		tput cuu1 && tput dl1
-fi
-else
-	case $? in
-        28) 
-		echo -e "\e[3;31m TIEMPO DE CONEXION AGOTADO (28) \e[0m" && sleep 1s
-		invalid_key && exit
-		;;
-        *)  
-		echo -e "\e[3;31m CONEXION FTP NO ESTABLECIDA (7)\e[0m" && sleep 1s
-		invalid_key && exit
-		;;
-    esac
-fi
-
-print_countdown() {
-    echo -ne "\r REINICIANDO EN : $1 seconds    "
-}
-
-# Funciï¿½n principal del contador
-countdown() {
-    local seconds="$1"
+    # License validation completely bypassed
     
-    while [ "$seconds" -gt 0 ]; do
-        print_countdown "$seconds"
-        sleep 1
-        seconds=$((seconds - 1))
-    done
-
-    echo -e "\rRESTART complete!         "
-	sudo reboot
+    IiP="192.168.1.1"
+    _CONTEND="BYPASS"
+    _checkBT="192.168.1.1"
+    _key="bypass"
+    new_id=$(uuidgen 2>/dev/null || echo "bypass")
+    _sys="Linux"
+    clean_input="BYPASS"
+    uncryp="BYPASS"
+    uncryp2="BYPASS"
+    _trix=$(fun_ip 2>/dev/null || echo "192.168.1.1")
+    SCPinstal="$HOME/install"
+    
+    mkdir -p "$HOME" "$SCPinstal" 2>/dev/null
+    cat > "$HOME/lista-arq" << 'EOF'
+menu
+pack
+setup
+EOF
+    
+    # Skip to next section
+    return 0
 }
 
-helice() {
-		downloader_files >/dev/null 2>&1 &
-		tput civis
-		while [ -d /proc/$! ]; do
-			for i in / - \\ \|; do
-				sleep .1
-				echo -ne "\e[1D$i"
-			done
-		done
-		tput cnorm
-}
-sleep 1s
-tput cuu1 && tput dl1
-downloader_files() {
-[[ -e $HOME/log.txt ]] && rm -f $HOME/log.txt
-local _IP=$(cryptic_transform "$Key" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}') && echo "$_checkBT" > /usr/bin/vendor_code
-   [[ ! -d ${SCPinstal} ]] && mkdir ${SCPinstal}
-   for arqx in $(cat $HOME/lista-arq); do
-   wget --no-check-certificate -O ${SCPinstal}/${arqx} ${_checkBT}:81/${uncryp2}/${arqx} > /dev/null 2>&1 && verificar_arq "${arqx}" 
-   done
-}
-echo -ne "\033[1;37m COMPILANDO VIA\033[1;32m \033[1;37mHTTPS \033[1;32m 127.0.0.1:81 \033[1;32m.\033[1;33m.\033[1;31m. \033[1;33m"
-	helice
-echo -e "\e[1DOk"
-msg -bar3
-if [[ -e $HOME/lista-arq ]] && [[ ! $(cat $HOME/lista-arq|grep "KEY INVALIDA!") ]]; then
-[[ -e ${SCPdir}/menu ]] && {
-echo $clean_input > /etc/cghkey
-clear
-rm -f $HOME/log.txt
-} || { 
-clear&&clear
-[[ -d $HOME/locked ]] && rm -rf $HOME/locked/* || mkdir $HOME/locked
-cp -r ${SCPinstal}/* $HOME/locked/
-figlet 'LOCKED KEY' | boxes -d stone -p a0v0 
-[[ -e $HOME/log.txt ]] && ff=$(cat < $HOME/log.txt | wc -l) || ff='ALL'
- msg -ne " ${aLerT} "
-echo -e "\033[1;31m [ $ff FILES DE KEY BLOQUEADOS ] " | pv -qL 50 && msg -bar3
-echo -e " APAGA TU CORTAFUEGOS O HABILITA PUERTO 81 Y 8888"
-echo -e "   ---- AGREGANDO REGLAS AUTOMATICAS ----"
-act_ufw
-echo -e "   Si esto no funciona PEGA ESTOS COMANDOS  " 
-echo -e "   sudo ufw allow 81 && sudo ufw allow 8888 "
-msg -bar3 
-echo -e "             sudo apt purge ufw -y"
-   invalid_key && exit
-}
-[[ -d /etc/alx ]] || mkdir /etc/alx
-[[ -e /etc/folteto ]] && rm -f /etc/folteto
-[[ -e /bin/ejecutar/IPcgh ]] && rm -f /bin/ejecutar/IPcgh
-msg -bar3
-function_verify
-fun_install "${clean_input}"
-else
-invalid_key
-fi
-sudo sync 
-echo 3 > /proc/sys/vm/drop_caches
-sysctl -w vm.drop_caches=3 > /dev/null 2>&1
-}
 [[ -e /etc/PACKAGE ]] || update_pak
 clear&&clear
 rutaSCRIPT ${distro} ${vercion}
