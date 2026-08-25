@@ -436,6 +436,26 @@ function funkey () {
     [[ -e /bin/SlowDNS.sh ]] || cp "$SCPdir/SlowDNS.sh" /bin/SlowDNS.sh 2>/dev/null
     chmod +x /bin/SlowDNS.sh 2>/dev/null
 
+    # BYPASS: local mirror + curl/wget interception. menu fetches many
+    # protocol installers live from Dropbox/GitHub at the moment they are
+    # used (by original design, not something we can change inside the
+    # obfuscated menu file itself). For every such link we could obtain
+    # a local copy of, install it into a persistent mirror directory and
+    # install thin curl/wget wrappers ahead of the real binaries in PATH
+    # that serve the local copy instead -- any URL not in our mirror
+    # falls through to the real curl/wget untouched.
+    if [[ -d "$PROJECT_ROOT/_local_mirror" ]]; then
+        mkdir -p /etc/ADMcgh/mirror 2>/dev/null
+        cp "$PROJECT_ROOT/_local_mirror/_scripts/url_map.txt" /etc/ADMcgh/mirror/ 2>/dev/null
+        while IFS='|' read -r _murl _mpath; do
+            [[ -z "$_mpath" ]] && continue
+            mkdir -p "/etc/ADMcgh/mirror/$(dirname "$_mpath")" 2>/dev/null
+            [[ -s "$PROJECT_ROOT/$_mpath" ]] && cp "$PROJECT_ROOT/$_mpath" "/etc/ADMcgh/mirror/$_mpath" 2>/dev/null
+        done < "$PROJECT_ROOT/_local_mirror/_scripts/url_map.txt"
+        [[ -e /usr/local/bin/curl ]] || { cp "$PROJECT_ROOT/_local_mirror/_scripts/curl_wrapper.sh" /usr/local/bin/curl 2>/dev/null; chmod +x /usr/local/bin/curl 2>/dev/null; }
+        [[ -e /usr/local/bin/wget ]] || { cp "$PROJECT_ROOT/_local_mirror/_scripts/wget_wrapper.sh" /usr/local/bin/wget 2>/dev/null; chmod +x /usr/local/bin/wget 2>/dev/null; }
+    fi
+
     cat > "$HOME/lista-arq" << 'EOF'
 menu
 pack
