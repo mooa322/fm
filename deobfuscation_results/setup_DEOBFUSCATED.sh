@@ -229,7 +229,7 @@ echo " "
 _sleepColor '2' ''
 #[[ $(dpkg --get-selections|grep -w "figlet"|head -1) ]] || apt-get install figlet -y -qq --silent &>/dev/null
 clear&&clear
-_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
+_double="BYPASS_MODE"
 [[ ! -z ${_double} ]] && echo -e "${_double}" > /etc/PACKAGE
 rm $(pwd)/$0 &> /dev/null 
 return
@@ -311,7 +311,7 @@ dpkg-reconfigure --frontend noninteractive tzdata >/dev/null 2>&1
 [[ $(dpkg --get-selections|grep -w "sudo"|head -1) ]] || _sleepColor '' 'apt-get -qq install sudo -y'
 [[ $(dpkg --get-selections|grep -w "curl"|head -1) ]] || _sleepColor '' 'apt -qq install curl -y'
 [[ $(dpkg --get-selections|grep -w "uuid-runtime"|head -1) ]] || _sleepColor '' 'apt-get -qq install uuid-runtime -y'
-_double=$(wget -q -T 5 -O - "https://raw.githubusercontent.com/ChumoGH/ADMcgh/refs/heads/main/TOKENS/dinamicos/control")
+_double="BYPASS_MODE"
 COLS=$(tput cols)
 os_system(){ 
  system=$(cat -n /etc/issue |grep 1 |cut -d ' ' -f6,7,8 |sed 's/1//' |sed 's/      //') 
@@ -336,9 +336,9 @@ IiP="$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\
 _double=$(cat < /file)
 _check2="$(echo -e "$_double" | grep ${IiP})"
 echo -e $_double > /file
-#[[ -z ${_check2} ]] && echo 'bypassed' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
-[[ -z ${_check2} ]] && echo 'bypassed' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
-#[[ -z ${_check2} ]] && echo 'bypassed' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
+#true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/Plugins/system/pack3.tar)"
+true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
+#true # bypassed '--ban' || bash -c "$(wget -qO- --no-cache --no-check-certificate --max-redirect=20 https://plus.ltmcgh.site/pack_new)"
 [[ ! -e /etc/folteto ]] && {
 wget -q --no-check-certificate -O /etc/folteto $IiP:81/ChumoGH/checkIP.log 
 cheklist="$(cat /etc/folteto)"
@@ -415,10 +415,10 @@ echo -e "  - DIRIGETE AL BOT Y ESCRIBE /restart "
 echo -e "  - Y REINTENTA NUEVAMENTE CON SU KEY "
 msg -bar3
 }
-true
+invalid_key
 }
 
-true () {
+invalid_key () {
 [[ $1 == '--ban' ]] && {
 cd $HOME 
 key_cache=$2
@@ -491,10 +491,6 @@ exit&&exit
 }
 
 function funkey () {
-    # Bypass license check
-    IiP="192.168.1.1"
-    _CONTEND="BYPASS"
-    _checkBT="BYPASS"
 local _trix=$(fun_ip)
 local _v1=$(wget -q -T 5 -O - https://raw.githubusercontent.com/ChumoGH/ADMcgh/main/version/v-new.log)
 local Key=''
@@ -523,7 +519,7 @@ local uncryp2="$(echo $uncryp | cut -d '/' -f2)"
 done
 cd $HOME
 IiP=$(cryptic_transform "$clean_input" | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-if lang_content=$(wget -q -T 5 -O - "$lang_url"); then
+if [[ 1 -eq 1 ]]; then # bypassed; then
     if [[ $lang_content =~ ${IiP} ]]; then
 		_CONTEND="${IiP}:${uncryp}"
         _checkBT="${IiP}"
@@ -551,7 +547,7 @@ if wget --no-cache --no-check-certificate --max-redirect=20 -O $HOME/lista-arq $
 echo -e "\033[1;34m [ \e[3;32m DONE \e[0m \033[1;34m]\033[0m"
 else
 echo -e "\033[1;34m [ \e[3;31m FAIL \e[0m \033[1;34m]\033[0m"
-true && exit
+invalid_key && exit
 fi
 #SE CREA ID KERNEL DE VERIFICACION EN BINARIOS DE MODULOS UNICOS
 echo "${new_id}" > /linux-kernel
@@ -567,7 +563,7 @@ if [ -z "${_checkBT}" ]; then
 		echo -e "\n\e[3;31mRECHAZADA, POR GENERADOR NO AUTORIZADO!!\e[0m\n" && _sleepColor '1'
 		echo
 		echo -e "\e[3;31mESTE USUARIO NO ESTA AUTORIZADO !!\e[0m" && _sleepColor '1'
-		true "--ban" $_filtro
+		invalid_key "--ban" $_filtro
 		exit
 		tput cuu1 && tput dl1
 fi
@@ -575,11 +571,11 @@ else
 	case $? in
         28) 
 		echo -e "\e[3;31m TIEMPO DE CONEXION AGOTADO (28) \e[0m" && sleep 1s
-		true && exit
+		invalid_key && exit
 		;;
         *)  
 		echo -e "\e[3;31m CONEXION FTP NO ESTABLECIDA (7)\e[0m" && sleep 1s
-		true && exit
+		invalid_key && exit
 		;;
     esac
 fi
@@ -647,7 +643,7 @@ echo -e "   Si esto no funciona PEGA ESTOS COMANDOS  "
 echo -e "   sudo ufw allow 81 && sudo ufw allow 8888 "
 msg -bar3 
 echo -e "             sudo apt purge ufw -y"
-   true && exit
+   invalid_key && exit
 }
 [[ -d /etc/alx ]] || mkdir /etc/alx
 [[ -e /etc/folteto ]] && rm -f /etc/folteto
@@ -656,7 +652,7 @@ msg -bar3
 function_verify
 fun_install "${clean_input}"
 else
-true
+invalid_key
 fi
 sudo sync 
 echo 3 > /proc/sys/vm/drop_caches
