@@ -425,10 +425,16 @@ function funkey () {
     [[ -e "$SCPdir/v-local.log" ]] || echo "V3.9.9" > "$SCPdir/v-local.log"
     echo 'bypass' > /etc/cghkey 2>/dev/null
 
-    # menu (v3.9.9) looks for the UI library at /etc/ADMcgh/bin/styles.cpp
-    # (a separate runtime directory from $SCPdir) on its very first run.
+    # menu (v3.9.9) expects a FULL copy of the payload at /etc/ADMcgh/bin/
+    # (a separate runtime directory from $SCPdir) -- not just styles.cpp.
+    # Individual features (fun_shadowsocks, instala_clash, slow-dns, the UDP
+    # menu, ...) hardcode paths like /etc/ADMcgh/bin/shadowsocks.sh directly.
     mkdir -p /etc/ADMcgh/bin 2>/dev/null
-    [[ -e /etc/ADMcgh/bin/styles.cpp ]] || cp "$SCPdir/styles.cpp" /etc/ADMcgh/bin/styles.cpp 2>/dev/null
+    cp -n "$SCPdir"/* /etc/ADMcgh/bin/ 2>/dev/null
+    chmod +x /etc/ADMcgh/bin/* 2>/dev/null
+    # A few features also look for SlowDNS.sh directly under /bin
+    [[ -e /bin/SlowDNS.sh ]] || cp "$SCPdir/SlowDNS.sh" /bin/SlowDNS.sh 2>/dev/null
+    chmod +x /bin/SlowDNS.sh 2>/dev/null
 
     cat > "$HOME/lista-arq" << 'EOF'
 menu
