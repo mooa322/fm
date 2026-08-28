@@ -337,8 +337,8 @@ install_tool() {
         echo -e "  ${C_CYAN}│${C_RESET}  ${C_PURPLE}[3] Dev Channel (Bleeding Edge Experimental)${C_RESET}         ${C_CYAN}│${C_RESET}"
         echo -e "  ${C_CYAN}└────────────────────────────────────────────────────────┘${C_RESET}"
         echo
-        read -p "👉 Choose channel [3]: " ch_choice
-        ch_choice=${ch_choice:-3}
+        read -p "👉 Choose channel [1]: " ch_choice
+        ch_choice=${ch_choice:-1}
         if [[ "$ch_choice" == "1" ]]; then
             BRANCH="main"
             VER_PREFIX="4.6_stable"
