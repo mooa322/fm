@@ -1,2 +1,21 @@
-# No changes needed - only source/config files were modified
-# README.md and install.sh are source files that should not be ignored
+```
+# Temporary build directories
+temp_build/
+temp_verify/
+
+# Compressed files
+*.tar
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+```
