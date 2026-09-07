@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title data-i18n="tt110">بوابة الموزع | لوحة التحكم</title>
+    <!-- GOOGLE FONTS (Rubik & JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#05060f;--c1:rgba(255,255,255,.045);--c2:rgba(255,255,255,.075);--ci:#0a0e1a;
+            --bs:rgba(255,255,255,.085);--bm:rgba(34,211,238,.34);
+            --a:#22d3ee;--al:#7dd3fc;--ad:rgba(34,211,238,.14);--a2:#a855f7;--a2d:rgba(168,85,247,.14);
+            --grad:linear-gradient(135deg,#22d3ee 0%,#818cf8 50%,#a855f7 100%);
+            --t:#38bdf8;--td:rgba(56,189,248,.12);
+            --g:#34d399;--gd:rgba(52,211,153,.13);--r:#fb7185;--rd:rgba(251,113,133,.14);--y:#fbbf24;
+            --tx:#eef2ff;--t2:#a5b4d4;--t3:#6b7a9e;--rs:8px;--rm:12px;--rl:20px;--sb:env(safe-area-inset-bottom,0px);
+            --lit:inset 0 1px 0 rgba(255,255,255,.11);
+            --sh2:0 12px 32px -8px rgba(0,0,0,.55);--sh3:0 28px 70px -18px rgba(0,0,0,.75);
+            --ease:cubic-bezier(.16,1,.3,1);
+            --f:'Rubik',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+            --m:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+        }
+        html{min-height:100%;background:#05060f;background-image:radial-gradient(ellipse 70% 55% at 88% -8%,rgba(34,211,238,.16),transparent 60%),radial-gradient(ellipse 70% 55% at 10% 108%,rgba(168,85,247,.15),transparent 60%);background-attachment:fixed;}
+        *, button, input, select, textarea, label {
+            box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+            font-family:var(--f)!important;
+        }
+        body{background:transparent;color:var(--tx);font-family:var(--f);min-height:100dvh;overflow-x:hidden;font-size:14px;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:linear-gradient(var(--a),var(--a2));border-radius:6px;}
+        .gt{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .mono{font-family:var(--m)!important;direction:ltr;display:inline-block;}.hidden{display:none!important;}
+        .gc{background:linear-gradient(158deg,#151b2e,#0d1220);border:1px solid var(--bs);border-radius:var(--rl);box-shadow:var(--lit),var(--sh2);transition:border-color .3s var(--ease),box-shadow .3s var(--ease),transform .3s var(--ease);}
+        .gc:hover{border-color:var(--bm);box-shadow:var(--lit),var(--sh3),0 0 32px -6px rgba(34,211,238,.22);}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.48rem .85rem;border-radius:var(--rm);font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:color .15s,background-color .15s,border-color .15s;white-space:nowrap;user-select:none;}
+        .btn:active{transform:scale(.96);}
+        .bp{background:var(--grad);background-size:180% 100%;color:#04121a;font-weight:800;box-shadow:0 4px 18px -4px rgba(34,211,238,.5),var(--lit);border-color:rgba(255,255,255,.14);}
+        .bp:hover{background-position:100% 0;box-shadow:0 8px 30px -6px rgba(34,211,238,.7);transform:translateY(-1px);}
+        .bs2{background:rgba(255,255,255,.04);color:var(--tx);border-color:var(--bs);}
+        .bs2:hover{background:rgba(255,255,255,.08);border-color:var(--bm);}
+        .bd{background:var(--rd);color:#fca5a5;border-color:rgba(239,68,68,.2);}
+        .bsm{padding:.35rem .65rem;font-size:.75rem;border-radius:var(--rs);}
+        .bi{width:32px;height:32px;min-width:32px;padding:0;border-radius:var(--rm);background:rgba(255,255,255,.04);color:var(--t2);border:1px solid var(--bs);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:color .15s,background-color .15s,border-color .15s;font-size:.85rem;}
+        .bi:hover{color:var(--al);background:var(--ad);border-color:var(--bm);}
+        .ig{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.6rem;}
+        .ig label{font-size:.68rem;font-weight:700;color:var(--t2);letter-spacing:.01em;}
+        .ig input,.ig select{width:100%;padding:.45rem .7rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);color:var(--tx);font-size:.82rem;outline:none;transition:color .2s,background-color .2s,border-color .2s;}
+        .ig input:focus,.ig select:focus{border-color:var(--a);box-shadow:0 0 0 2px var(--ad);}
+        .ir{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;}
+        #tc{position:fixed;top:.75rem;right:50%;transform:translateX(50%);z-index:9999;display:flex;flex-direction:column;gap:.4rem;pointer-events:none;width:92%;max-width:360px;}
+        .toast{pointer-events:auto;padding:.6rem .9rem;border-radius:50px;background:#0c1122;border:1px solid var(--bm);color:#ffffff!important;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 10px 35px rgba(0,0,0,.6);}
+        .toast.s{border-right:4px solid #10b981;background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(14,19,31,.98));}
+        .toast.e{border-right:4px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(14,19,31,.98));}
+        .badge{display:inline-flex;align-items:center;padding:.18rem .5rem;border-radius:50px;font-size:.65rem;font-weight:700;}
+        .bg2{background:var(--gd);color:var(--g);}.br{background:var(--rd);color:#fca5a5;}.by{background:rgba(245,158,11,.15);color:var(--y);}.bgr{background:rgba(255,255,255,.05);color:var(--t2);}.bt{background:var(--td);color:var(--t);}
+        #lv{display:flex;align-items:center;justify-content:center;min-height:100dvh;}
+        #lview{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:1.5rem;}
+        .lcard{width:100%;max-width:380px;padding:2.5rem 2rem;text-align:center;border-radius:26px;background:linear-gradient(158deg,#182036,#0e1424);box-shadow:var(--lit),0 34px 90px -20px rgba(0,0,0,.85),0 0 90px -24px rgba(34,211,238,.45);border:1px solid var(--bs);}
+        
+        /* LAYOUT & SIDEBAR */
+        .sidebar{width:240px;background:linear-gradient(180deg,#0b1020,#070a14);border-left:1px solid var(--bs);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;right:0;z-index:999;transition:transform .25s cubic-bezier(.16,1,.3,1);}
+        .sb-hdr{padding:1.25rem 1rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--bs);}
+        .sb-nav{padding:.75rem .5rem;display:flex;flex-direction:column;gap:.25rem;flex:1;overflow-y:auto;}
+        .ni{display:flex;align-items:center;gap:.65rem;padding:.6rem .8rem;border-radius:var(--rm);color:var(--t2);font-size:.8rem;font-weight:700;cursor:pointer;transition:color .15s,background-color .15s,border-color .15s;border-right:3px solid transparent;}
+        .ni:hover{color:var(--tx);background:rgba(255,255,255,.04);}
+        .ni.a{color:var(--tx);background:linear-gradient(270deg,var(--ad),transparent);border-right-color:var(--a);box-shadow:inset 0 0 24px -10px rgba(34,211,238,.5);}
+        .sb-ft{padding:.75rem .5rem;border-top:1px solid var(--bs);display:flex;flex-direction:column;gap:.35rem;}
+        .main{margin-right:240px;padding:1.5rem 1.5rem calc(4rem + var(--sb));max-width:1100px;}
+        .mhdr{display:none;position:fixed;top:0;left:0;right:0;height:50px;z-index:900;background:rgba(7,9,14,.96);border-bottom:1px solid var(--bs);padding:0 .85rem;align-items:center;justify-content:space-between;}
+        .bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:rgba(7,9,14,.98);border-top:1px solid var(--bs);padding:.35rem .4rem calc(.35rem + var(--sb));justify-content:space-around;align-items:center;}
+        .bni{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.3rem .5rem;border-radius:10px;cursor:pointer;color:var(--t3);transition:color .15s,background-color .15s,border-color .15s;}
+        .bni.a{color:var(--al);font-weight:700;}
+        .bni .bic{font-size:1.1rem;}.bni .blb{font-size:.6rem;}
+        .sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;opacity:0;pointer-events:none;transition:opacity .25s;}
+        .sb-overlay.active{opacity:1;pointer-events:auto;}
+
+        /* STATS & CARDS */
+        .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem;margin-bottom:1.15rem;}
+        .sc{padding:.8rem .95rem;position:relative;}
+        .sl{font-size:.65rem;font-weight:700;color:var(--t3);margin-bottom:.2rem;}
+        .sv{font-size:1.4rem;font-weight:800;}
+        .sd{font-size:.65rem;color:var(--t3);margin-top:.15rem;}
+
+        /* USER LIST */
+        .ucards{display:flex;flex-direction:column;gap:.5rem;}
+        .uc{padding:0;overflow:hidden;border-right:3px solid transparent;}
+        .uc:has(.bg2){border-right-color:var(--g);}.uc:has(.br){border-right-color:var(--r);}.uc:has(.by){border-right-color:var(--y);}
+        .ucb{padding:.65rem .8rem 0;}
+        .uct{display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem;}
+        .ucn{font-size:.85rem;font-weight:700;color:var(--al);}
+        .ucg{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .45rem;margin-bottom:.4rem;}
+        .uf{display:flex;flex-direction:column;gap:.05rem;}
+        .ufl{font-size:.6rem;font-weight:700;color:var(--t3);}
+        .ufv{font-size:.78rem;color:var(--tx);}
+        .uca{display:flex;gap:0;border-top:1px solid var(--bs);}
+        .uact{flex:1;padding:.45rem .15rem;text-align:center;font-size:.65rem;font-weight:700;color:var(--t2);cursor:pointer;border:none;background:transparent;border-left:1px solid var(--bs);display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+        .uact:last-child{border-left:none;}
+        .uact:hover{background:rgba(255,255,255,.04);color:var(--tx);}
+        .uact.dng{color:#fca5a5;}
+        .tw{display:block;}.tw table{width:100%;border-collapse:collapse;}
+        .tw th{padding:.6rem .75rem;font-size:.68rem;font-weight:700;color:var(--t3);border-bottom:1px solid var(--bm);background:rgba(0,0,0,.2);text-align:right;}
+        .tw td{padding:.65rem .75rem;font-size:.8rem;border-bottom:1px solid var(--bs);vertical-align:middle;}
+        .tw tr:hover td{background:rgba(255,255,255,.03);}
+        .tda{display:flex;gap:.25rem;}
+
+        /* MODALS */
+        .mo{position:fixed;inset:0;background:rgba(7,9,14,.85);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1.25rem 1rem 2rem;opacity:0;pointer-events:none;transition:opacity .2s;overflow-y:auto;}
+        .mo.active{opacity:1;pointer-events:auto;}
+        .mb2{width:100%;max-width:420px;margin:0 auto;background:var(--c2);border:1px solid var(--bm);border-radius:var(--rl);padding:1.1rem 1.15rem;box-shadow:0 15px 45px rgba(0,0,0,.75);transform:translateY(-6px);transition:transform .22s cubic-bezier(.16,1,.3,1);max-height:92dvh;overflow-y:auto;}
+        .mo.active .mb2{transform:translateY(0);}
+        .mhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:1px solid var(--bs);}
+        .mtl{font-size:1rem;font-weight:800;}
+        .mft{display:flex;gap:.45rem;margin-top:.75rem;padding-top:.35rem;border-top:1px solid var(--bs);}.mft .btn{flex:1;padding:.45rem .75rem;font-size:.78rem;}
+        .sbox{margin-bottom:.85rem;width:100%;}
+        .sbox input{width:100%;max-width:280px;padding:.45rem 1.6rem .45rem .75rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);color:var(--tx);font-size:.8rem;outline:none;}
+        
+        @media(max-width:768px){
+            .sidebar{transform:translateX(100%);box-shadow:-8px 0 25px rgba(0,0,0,.6);}
+            .sidebar.open{transform:translateX(0);}
+            .main{margin-right:0;padding:3.6rem .8rem calc(4.2rem + var(--sb));}
+            .mhdr{display:flex;}.bnav{display:flex;}
+            .tw{display:none;}.ucards{display:flex;}
+            .sgrid{grid-template-columns:1fr 1fr;gap:.45rem;}
+        }
+        @media(min-width:769px){
+            .ucards{display:none;}.tw{display:block;}
+        }
+        body.light-theme{
+            --bg:#eef2f9;--c1:#ffffff;--c2:#f8fafc;--ci:#f1f5f9;--bs:rgba(15,23,42,.10);--bm:rgba(8,145,178,.42);
+            --a:#0891b2;--al:#0e7490;--ad:rgba(8,145,178,.10);--a2:#7c3aed;--grad:linear-gradient(135deg,#0891b2 0%,#6366f1 50%,#7c3aed 100%);--t:#0284c7;--g:#10b981;--r:#dc2626;--y:#d97706;--tx:#0f172a;--t2:#334155;--t3:#64748b;
+        }
+        .lang-switch{display:flex;gap:.25rem;}
+        .lang-btn{background:rgba(255,255,255,.06);border:1px solid var(--bs);color:var(--t3);font-size:.62rem;font-weight:800;padding:.25rem .45rem;border-radius:6px;cursor:pointer;letter-spacing:.03em;line-height:1;}
+        .lang-btn.active{background:var(--al);color:#04121a;border-color:var(--al);}
+        .lang-btn:hover{opacity:.85;}
+        .sb-ft .lang-switch{width:100%;justify-content:center;margin-bottom:.35rem;}
+        html[dir="ltr"] [style*="text-align:right"]{text-align:left!important;}
+        html[dir="ltr"] .ig{text-align:left!important;}
+    </style>
+</head>
+<body>
+<script>
+const I18N={ar:{k1:"بوابة الموزع",k2:"إدارة الحسابات والاشتراكات التابعة",k3:"اسم المستخدم",k4:"كلمة المرور",k5:"تسجيل الدخول",k6:"موزع",k7:"🤝 موزع",k8:"الرئيسية والرصيد",k9:"إدارة المشتركين",k10:"حساب جديد",k11:"حساب تجريبي",k12:"إنشاء جماعي",k13:"تحديث البيانات",k14:"🌙 تبديل المظهر",k15:"🚪 تسجيل الخروج",k16:"إدارة الحسابات والاشتراكات التابعة ومراقبة الحصص",k17:"🔄 تحديث",k18:"⏱ تجريبي",k19:"📦 جماعي",k20:"+ حساب جديد",k21:"👥 حصة الحسابات المستهلكة:",k22:"💰 رصيد النقاط المتبقي:",k23:"-- نقطة",k24:"1 نقطة = تجديد أو إنشاء حساب لمدة 30 يوماً",k25:"📅 صلاحية الموزع",k26:"نشط",k27:"الحسابات التابعة",k28:"إجمالي المسجلين لديك",k29:"المتصلون الآن",k30:"الجلسات النشطة حالياً",k31:"حسابات منتهية",k32:"تحتاج إلى تجديد",k33:"قريبة من النفاد",k34:"≥80% من الحصة",k35:"👥 قائمة المشتركين",k36:"الكل",k37:"🆕 الأحدث",k38:"🟢 متصل",k39:"⚪ غير متصل",k40:"🔴 منتهي",k41:"🟡 متوقف",k42:"⚠️ قريب من الحصة",k43:"📊 الأكثر استهلاكًا",k44:"المستخدم",k45:"تاريخ الانتهاء",k46:"الجلسات",k47:"الباندويث",k48:"الحالة",k49:"الإجراءات",k50:"الرئيسية",k51:"المشتركين",k52:"إنشاء",k53:"القائمة",k54:"🔄 تجديد الاشتراك",k55:"الانتهاء الحالي",k56:"📅 مدة التجديد (الصلاحية)",o57:"أيام",o58:"ساعات",k59:"+7 ي",k60:"+30 ي",k61:"+60 ي",k62:"+90 ي",k63:"تراكمي للمدة:",k64:"تضاف الأيام فوق المتبقي الحالي",k65:"📊 خيارات البيانات والباندويث",k66:"➕ إضافة تراكمية",k67:"🔄 تصفير الاستهلاك",k68:"⏳ إبقاء الحالي",k69:"📱 عدد الأجهزة المسموحة",k70:"الانتهاء الجديد:",k71:"البيانات بعد التجديد:",k72:"إلغاء",k73:"✅ تأكيد التجديد",k74:"إنشاء حساب جديد",k75:"توليد",k76:"المدة",k77:"عدد الأجهزة المسموحة",k78:"إجمالي الباندويث (GB, 0=∞)",k79:"الباندويث اليومي (GB, 0=∞)",k80:"إنشاء الحساب",k81:"اسم المستخدم (اختياري)",k82:"المدة الزمنية",o83:"1 ساعة",o84:"2 ساعتان",o85:"3 ساعات",o86:"6 ساعات",o87:"12 ساعة",o88:"1 يوم (24 ساعة)",o89:"3 أيام",k90:"عدد الأجهزة",k91:"الباندويث (GB, 0=∞)",k92:"إنشاء التجريبي",k93:"📦 إنشاء جماعي للحسابات",k94:"البادئة (Prefix)",k95:"العدد المطلوب",k96:"المدة لكل حساب",k97:"🚀 البدء بالإنشاء",k98:"جاري الإنشاء...",k99:"📋 نسخ الحسابات",k100:"إغلاق",k101:"تعديل بيانات الحساب",k102:"كلمة المرور الجديدة",k103:"تعديل الصلاحية (المدة)",k104:"حفظ التعديلات",ph105:"بحث بالمستخدم...",ph106:"البيانات المضافة (GB)",ph107:"توليد تلقائي",ph108:"دون تغيير",ph109:"إبقاء الحالية",k105:"⚙️ الإعدادات",k106:"معرّف تيليجرام للدعم (بدون @)",k107:"يظهر هذا الحساب في صفحة متابعة استهلاك عملائك بدل حساب المزوّد الافتراضي — اتركه فارغًا لاستخدام الافتراضي.",ph110:"yourusername",tt110:"بوابة الموزع | لوحة التحكم",rj1:"انتهت الجلسة",rj2:"فشل الطلب",rj3:"تعذر النسخ، يرجى النسخ يدوياً",rj4:"تعذر النسخ التلقائي",rj5:"نقطة",rj6:"مستخدم",rj7:"منتهي",rj8:"متبقي",rj9:"يوم",rj10:"جاري التحقق...",rj11:"تم تسجيل الدخول بنجاح",rj12:"تم تحديث قائمة الحسابات",rj13:"فشل تحميل الحسابات",rj14:"لا توجد حسابات مسجلة",rj15:"موقوف",rj16:"نسخ",rj17:"تعديل",rj18:"تجديد",rj19:"رابط استهلاك المستخدم",rj19b:"رابط الاستهلاك",rj20:"إلغاء القفل",rj21:"قفل",rj22:"حذف",rj23:"الانتهاء",rj24:"الحد الأقصى للأجهزة:",rj25:"💰 متبقي لديك",rj26:"نقطة (1 نقطة = 30 يوم)",rj27:"تم إنشاء الحساب بنجاح",rj28:"تم حفظ التعديلات",rj29:"غير محدود (∞)",rj30:"البيانات:",rj31:"الإجمالي:",rj32:"إبقاء الحالي",rj33:"تصفير الاستهلاك كدورة جديدة (0 GB)",rj34:"مستمر",rj35:"💰 سيتم خصم",rj36:"نقطة من رصيدك",rj37:"جاري التجديد...",rj38:"تم تجديد اشتراك",rj39:"بنجاح",rj40:"أجهزة",rj41:"فشل تجديد الحساب",rj42:"تم قفل الحساب",rj43:"تم إلغاء القفل",rj44:"هل أنت متأكد من حذف الحساب",rj45:"نهائياً؟",rj46:"تم حذف الحساب بنجاح",rj47:"اسم المستخدم:",rj48:"كلمة المرور:",rj49:"تاريخ الانتهاء:",rj50:"الأجهزة:",rj51:"غير محدود",rj52:"تم نسخ بيانات الحساب بنجاح",rj53:"تم النسخ بنجاح",rj53b:"تم نسخ رابط استهلاك المستخدم",rj54:"متوقف ⏸",rj55:"مفعّل ✅",rj56:"تفعيل الرابط",rj57:"إيقاف الرابط",rj58:"رابط استهلاك المستخدم (تم نسخه أيضًا):",rj59:"الحالة:",rj60:"اضغط \"موافق\" لـ",rj61:"، أو \"إلغاء\" للإغلاق فقط.",rj62:"تعذّر الحصول على الرابط",rj63:"تم تفعيل رابط الاستهلاك",rj64:"تم إيقاف رابط الاستهلاك",rj65:"بيانات الحساب",rj66:"انسخ كل حقل وحده والصقه في خانته المقابلة داخل التطبيق — لا تنسخ الكتلة كاملة.",rj67:"رابط متابعة الاستهلاك",rj68:"إغلاق",rj69:"📋 نسخ",rj70:"تم إنشاء الحساب التجريبي",rj71:"تم إنشاء الحسابات بنجاح",rj72:"الحسابات المنشأة",rj73:"فشل الإنشاء"},en:{k1:"Reseller Portal",k2:"Manage sub-accounts and subscriptions",k3:"Username",k4:"Password",k5:"Login",k6:"Reseller",k7:"🤝 Reseller",k8:"Home & Balance",k9:"Manage Subscribers",k10:"New Account",k11:"Trial Account",k12:"Bulk Create",k13:"Refresh Data",k14:"🌙 Toggle Theme",k15:"🚪 Logout",k16:"Manage sub-accounts and subscriptions and monitor quotas",k17:"🔄 Refresh",k18:"⏱ Trial",k19:"📦 Bulk",k20:"+ New Account",k21:"👥 Account quota used:",k22:"💰 Remaining credit balance:",k23:"-- points",k24:"1 point = renew or create an account for 30 days",k25:"📅 Reseller Validity",k26:"Active",k27:"Sub-Accounts",k28:"Total registered by you",k29:"Online Now",k30:"Currently active sessions",k31:"Expired Accounts",k32:"Need renewal",k33:"Near Limit",k34:"≥80% of quota",k35:"👥 Subscriber List",k36:"All",k37:"🆕 Newest",k38:"🟢 Online",k39:"⚪ Offline",k40:"🔴 Expired",k41:"🟡 Locked",k42:"⚠️ Near Quota",k43:"📊 Highest Usage",k44:"User",k45:"Expiry Date",k46:"Sessions",k47:"Bandwidth",k48:"Status",k49:"Actions",k50:"Home",k51:"Subscribers",k52:"Create",k53:"Menu",k54:"🔄 Renew Subscription",k55:"Current Expiry",k56:"📅 Renewal Duration (Validity)",o57:"Days",o58:"Hours",k59:"+7 d",k60:"+30 d",k61:"+60 d",k62:"+90 d",k63:"Cumulative duration:",k64:"Days are added on top of the current remaining time",k65:"📊 Data & Bandwidth Options",k66:"➕ Add Cumulatively",k67:"🔄 Reset Usage",k68:"⏳ Keep Current",k69:"📱 Number of Allowed Devices",k70:"New Expiry:",k71:"Data After Renewal:",k72:"Cancel",k73:"✅ Confirm Renewal",k74:"Create New Account",k75:"Generate",k76:"Duration",k77:"Number of Allowed Devices",k78:"Total Bandwidth (GB, 0=∞)",k79:"Daily Bandwidth (GB, 0=∞)",k80:"Create Account",k81:"Username (optional)",k82:"Duration",o83:"1 Hour",o84:"2 Hours",o85:"3 Hours",o86:"6 Hours",o87:"12 Hours",o88:"1 Day (24 Hours)",o89:"3 Days",k90:"Number of Devices",k91:"Bandwidth (GB, 0=∞)",k92:"Create Trial",k93:"📦 Bulk Account Creation",k94:"Prefix",k95:"Number Required",k96:"Duration per Account",k97:"🚀 Start Creation",k98:"Creating...",k99:"📋 Copy Accounts",k100:"Close",k101:"Edit Account Details",k102:"New Password",k103:"Edit Validity (Duration)",k104:"Save Changes",ph105:"Search by username...",ph106:"Data added (GB)",ph107:"Auto-generate",ph108:"No change",ph109:"Keep current",k105:"⚙️ Settings",k106:"Telegram support handle (no @)",k107:"Shown on your customers' usage-status page instead of the default provider account — leave empty to use the default.",ph110:"yourusername",tt110:"Reseller Portal | Control Panel",rj1:"Session expired",rj2:"Request failed",rj3:"Could not copy, please copy manually",rj4:"Automatic copy failed",rj5:"point(s)",rj6:"user(s)",rj7:"Expired",rj8:"Remaining",rj9:"day(s)",rj10:"Verifying...",rj11:"Logged in successfully",rj12:"Account list updated",rj13:"Failed to load accounts",rj14:"No registered accounts",rj15:"Locked",rj16:"Copy",rj17:"Edit",rj18:"Renew",rj19:"User consumption link",rj19b:"Consumption link",rj20:"Unlock",rj21:"Lock",rj22:"Delete",rj23:"Expiry",rj24:"Maximum devices:",rj25:"💰 You have remaining",rj26:"point(s) (1 point = 30 days)",rj27:"Account created successfully",rj28:"Changes saved",rj29:"Unlimited (∞)",rj30:"Data:",rj31:"Total:",rj32:"Keep current",rj33:"Reset usage as a new cycle (0 GB)",rj34:"Ongoing",rj35:"💰 Will deduct",rj36:"point(s) from your balance",rj37:"Renewing...",rj38:"Subscription renewed for",rj39:"successfully",rj40:"devices",rj41:"Failed to renew account",rj42:"Account locked",rj43:"Unlocked",rj44:"Are you sure you want to delete the account",rj45:"permanently?",rj46:"Account deleted successfully",rj47:"Username:",rj48:"Password:",rj49:"Expiry date:",rj50:"Devices:",rj51:"Unlimited",rj52:"Account data copied successfully",rj53:"Copied successfully",rj53b:"User consumption link copied",rj54:"Stopped ⏸",rj55:"Enabled ✅",rj56:"Enable link",rj57:"Disable link",rj58:"User consumption link (also copied):",rj59:"Status:",rj60:"Press \"OK\" to",rj61:", or \"Cancel\" to just close.",rj62:"Could not get the link",rj63:"Consumption link enabled",rj64:"Consumption link disabled",rj65:"Account credentials",rj66:"Copy each field on its own and paste it into the matching box in your app — do not copy the whole block.",rj67:"Usage tracking link",rj68:"Close",rj69:"📋 Copy",rj70:"Trial account created",rj71:"Accounts created successfully",rj72:"Created accounts",rj73:"Creation failed"},fr:{k1:"Portail revendeur",k2:"Gérer les comptes et abonnements affiliés",k3:"Nom d'utilisateur",k4:"Mot de passe",k5:"Connexion",k6:"Revendeur",k7:"🤝 Revendeur",k8:"Accueil et solde",k9:"Gérer les abonnés",k10:"Nouveau compte",k11:"Compte d'essai",k12:"Création en masse",k13:"Actualiser les données",k14:"🌙 Changer de thème",k15:"🚪 Déconnexion",k16:"Gérer les comptes affiliés et surveiller les quotas",k17:"🔄 Actualiser",k18:"⏱ Essai",k19:"📦 En masse",k20:"+ Nouveau compte",k21:"👥 Quota de comptes utilisé :",k22:"💰 Solde de crédits restant :",k23:"-- points",k24:"1 point = renouveler ou créer un compte pour 30 jours",k25:"📅 Validité du revendeur",k26:"Actif",k27:"Comptes affiliés",k28:"Total enregistré par vous",k29:"Connectés maintenant",k30:"Sessions actives actuellement",k31:"Comptes expirés",k32:"Nécessitent un renouvellement",k33:"Proche de la limite",k34:"≥80% du quota",k35:"👥 Liste des abonnés",k36:"Tous",k37:"🆕 Plus récent",k38:"🟢 En ligne",k39:"⚪ Hors ligne",k40:"🔴 Expiré",k41:"🟡 Verrouillé",k42:"⚠️ Proche du quota",k43:"📊 Consommation la plus élevée",k44:"Utilisateur",k45:"Date d'expiration",k46:"Sessions",k47:"Bande passante",k48:"Statut",k49:"Actions",k50:"Accueil",k51:"Abonnés",k52:"Créer",k53:"Menu",k54:"🔄 Renouveler l'abonnement",k55:"Expiration actuelle",k56:"📅 Durée de renouvellement (validité)",o57:"Jours",o58:"Heures",k59:"+7 j",k60:"+30 j",k61:"+60 j",k62:"+90 j",k63:"Durée cumulée :",k64:"Les jours sont ajoutés au temps restant actuel",k65:"📊 Options de données et bande passante",k66:"➕ Ajouter de manière cumulative",k67:"🔄 Réinitialiser l'utilisation",k68:"⏳ Conserver l'actuel",k69:"📱 Nombre d'appareils autorisés",k70:"Nouvelle expiration :",k71:"Données après renouvellement :",k72:"Annuler",k73:"✅ Confirmer le renouvellement",k74:"Créer un nouveau compte",k75:"Générer",k76:"Durée",k77:"Nombre d'appareils autorisés",k78:"Bande passante totale (Go, 0=∞)",k79:"Bande passante quotidienne (Go, 0=∞)",k80:"Créer le compte",k81:"Nom d'utilisateur (facultatif)",k82:"Durée",o83:"1 heure",o84:"2 heures",o85:"3 heures",o86:"6 heures",o87:"12 heures",o88:"1 jour (24 heures)",o89:"3 jours",k90:"Nombre d'appareils",k91:"Bande passante (Go, 0=∞)",k92:"Créer l'essai",k93:"📦 Création de comptes en masse",k94:"Préfixe",k95:"Nombre requis",k96:"Durée par compte",k97:"🚀 Démarrer la création",k98:"Création en cours...",k99:"📋 Copier les comptes",k100:"Fermer",k101:"Modifier les détails du compte",k102:"Nouveau mot de passe",k103:"Modifier la validité (durée)",k104:"Enregistrer les modifications",ph105:"Rechercher par nom d'utilisateur...",ph106:"Données ajoutées (Go)",ph107:"Génération automatique",ph108:"Aucun changement",ph109:"Conserver l'actuel",k105:"⚙️ Paramètres",k106:"Identifiant Telegram du support (sans @)",k107:"Affiché sur la page de suivi de consommation de vos clients à la place du compte du fournisseur par défaut — laissez vide pour utiliser celui par défaut.",ph110:"yourusername",tt110:"Portail revendeur | Panneau de contrôle",rj1:"Session expirée",rj2:"Échec de la requête",rj3:"Impossible de copier, veuillez copier manuellement",rj4:"La copie automatique a échoué",rj5:"point(s)",rj6:"utilisateur(s)",rj7:"Expiré",rj8:"Restant",rj9:"jour(s)",rj10:"Vérification...",rj11:"Connecté avec succès",rj12:"Liste des comptes mise à jour",rj13:"Échec du chargement des comptes",rj14:"Aucun compte enregistré",rj15:"Verrouillé",rj16:"Copier",rj17:"Modifier",rj18:"Renouveler",rj19:"Lien de consommation de l'utilisateur",rj19b:"Lien de consommation",rj20:"Déverrouiller",rj21:"Verrouiller",rj22:"Supprimer",rj23:"Expiration",rj24:"Appareils maximum :",rj25:"💰 Il vous reste",rj26:"point(s) (1 point = 30 jours)",rj27:"Compte créé avec succès",rj28:"Modifications enregistrées",rj29:"Illimité (∞)",rj30:"Données :",rj31:"Total :",rj32:"Conserver l'actuel",rj33:"Réinitialiser l'utilisation comme un nouveau cycle (0 Go)",rj34:"En cours",rj35:"💰 Sera déduit",rj36:"point(s) de votre solde",rj37:"Renouvellement...",rj38:"Abonnement renouvelé pour",rj39:"avec succès",rj40:"appareils",rj41:"Échec du renouvellement du compte",rj42:"Compte verrouillé",rj43:"Déverrouillé",rj44:"Êtes-vous sûr de vouloir supprimer le compte",rj45:"définitivement ?",rj46:"Compte supprimé avec succès",rj47:"Nom d'utilisateur :",rj48:"Mot de passe :",rj49:"Date d'expiration :",rj50:"Appareils :",rj51:"Illimité",rj52:"Données du compte copiées avec succès",rj53:"Copié avec succès",rj53b:"Lien de consommation copié",rj54:"Arrêté ⏸",rj55:"Activé ✅",rj56:"Activer le lien",rj57:"Désactiver le lien",rj58:"Lien de consommation de l'utilisateur (aussi copié) :",rj59:"Statut :",rj60:"Appuyez sur « OK » pour",rj61:", ou « Annuler » pour fermer seulement.",rj62:"Impossible d'obtenir le lien",rj63:"Lien de consommation activé",rj64:"Lien de consommation désactivé",rj65:"Identifiants du compte",rj66:"Copiez chaque champ séparément et collez-le dans la case correspondante de votre application — ne copiez pas le bloc entier.",rj67:"Lien de suivi de consommation",rj68:"Fermer",rj69:"📋 Copier",rj70:"Compte d'essai créé",rj71:"Comptes créés avec succès",rj72:"Comptes créés",rj73:"Échec de la création"}};
+let currentLang = (function(){ try{ return localStorage.getItem('dahoom_lang') || 'ar'; }catch(e){ return 'ar'; } })();
+function __i18n(key){ var d=I18N[currentLang]||I18N.ar; return (d && d[key]!==undefined) ? d[key] : ((I18N.ar[key]!==undefined) ? I18N.ar[key] : key); }
+function applyLanguage(lang){
+    if(!I18N[lang]) lang='ar';
+    currentLang = lang;
+    try{ localStorage.setItem('dahoom_lang', lang); }catch(e){}
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('dir', lang==='ar' ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = __i18n(el.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-title]').forEach(function(el){ el.title = __i18n(el.getAttribute('data-i18n-title')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.placeholder = __i18n(el.getAttribute('data-i18n-ph')); });
+    document.querySelectorAll('[data-i18n-val]').forEach(function(el){ el.value = __i18n(el.getAttribute('data-i18n-val')); });
+    document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lang')===lang); });
+}
+document.addEventListener('DOMContentLoaded', function(){ applyLanguage(currentLang); });
+</script>
+
+<div id="tc"></div>
+<div id="sb-overlay" class="sb-overlay" onclick="toggleSidebar()"></div>
+
+<div id="lv">
+    <div style="font-size:2.5rem;animation:pulse 1.2s infinite ease-in-out;" id="lv-logo">🤝</div>
+</div>
+
+<!-- LOGIN VIEW -->
+<div id="lview" class="hidden">
+<div class="gc lcard">
+    <div style="position:absolute;top:12px;left:12px;cursor:pointer;font-size:1rem;" class="theme-btn" onclick="toggleTheme()">🌙</div>
+    <div class="lang-switch" style="position:absolute;top:12px;right:12px;">
+        <button class="lang-btn" data-lang="ar" onclick="applyLanguage('ar')">AR</button>
+        <button class="lang-btn" data-lang="en" onclick="applyLanguage('en')">EN</button>
+        <button class="lang-btn" data-lang="fr" onclick="applyLanguage('fr')">FR</button>
+    </div>
+    <div style="font-size:2.8rem;margin-bottom:.4rem;" id="login-logo">🤝</div>
+    <div style="display:inline-flex;align-items:center;gap:.35rem;margin-bottom:.15rem;">
+        <h1 style="font-size:1.35rem;font-weight:800;" class="gt" id="login-name"><span data-i18n="k1">بوابة الموزع</span></h1>
+        <span class="badge bt">Reseller</span>
+    </div>
+    <p style="font-size:.75rem;color:var(--t3);margin-bottom:1.25rem;font-weight:600;"><span data-i18n="k2">إدارة الحسابات والاشتراكات التابعة</span></p>
+    <form id="lf">
+        <div class="ig" style="text-align:right;"><label><span data-i18n="k3">اسم المستخدم</span></label><input type="text" id="lu" required autocomplete="username"></div>
+        <div class="ig" style="text-align:right;"><label><span data-i18n="k4">كلمة المرور</span></label><input type="password" id="lp" required autocomplete="current-password"></div>
+        <button type="submit" id="lb" class="btn bp" style="width:100%;margin-top:.65rem;padding:.65rem;"><span data-i18n="k5">تسجيل الدخول</span></button>
+    </form>
+</div>
+</div>
+
+<!-- RESELLER PORTAL APP VIEW -->
+<div id="av" class="hidden">
+
+<!-- MOBILE TOP HEADER -->
+<header class="mhdr">
+    <div style="display:flex;align-items:center;gap:.45rem;">
+        <span style="font-size:1.25rem;" id="mh-logo">Ⓓ</span>
+        <span class="gt" style="font-weight:800;font-size:.9rem;" id="mh-name">DAHOOM</span>
+        <span class="badge bt" style="font-size:.55rem;padding:.1rem .35rem;"><span data-i18n="k6">موزع</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.35rem;">
+        <button class="bi theme-btn" onclick="toggleTheme()" style="width:30px;height:30px;min-width:30px;font-size:.8rem;">🌙</button>
+        <button class="bi" onclick="toggleSidebar()" style="width:30px;height:30px;min-width:30px;font-size:1rem;">☰</button>
+    </div>
+</header>
+
+<!-- SIDEBAR DRAWER (QUICK LINKS) -->
+<aside class="sidebar" id="app-sidebar">
+    <div class="sb-hdr">
+        <div style="font-size:1.5rem;" id="sb-logo">Ⓓ</div>
+        <div>
+            <div class="gt" style="font-weight:800;font-size:.88rem;" id="sb-name">DAHOOM</div>
+            <div style="font-size:.65rem;color:var(--al);font-weight:700;" id="sb-user-display"><span data-i18n="k7">🤝 موزع</span></div>
+        </div>
+    </div>
+    <nav class="sb-nav">
+        <div class="ni a" onclick="scrollToSec('rib')">
+            <span>📊</span><span><span data-i18n="k8">الرئيسية والرصيد</span></span>
+        </div>
+        <div class="ni" onclick="scrollToSec('users-sec')">
+            <span>👥</span><span><span data-i18n="k9">إدارة المشتركين</span></span>
+        </div>
+        <div class="ni" onclick="openCU();toggleSidebar()">
+            <span>➕</span><span><span data-i18n="k10">حساب جديد</span></span>
+        </div>
+        <div class="ni" id="sb-trial-link" onclick="openM('mtr');toggleSidebar()">
+            <span>⏱</span><span><span data-i18n="k11">حساب تجريبي</span></span>
+        </div>
+        <div class="ni" id="sb-bulk-link" onclick="openM('mbk');toggleSidebar()">
+            <span>📦</span><span><span data-i18n="k12">إنشاء جماعي</span></span>
+        </div>
+        <div class="ni" onclick="lU(false,true);lD();toggleSidebar()">
+            <span>🔄</span><span><span data-i18n="k13">تحديث البيانات</span></span>
+        </div>
+    </nav>
+    <div class="sb-ft">
+        <div class="lang-switch">
+            <button class="lang-btn" data-lang="ar" onclick="applyLanguage('ar')">AR</button>
+            <button class="lang-btn" data-lang="en" onclick="applyLanguage('en')">EN</button>
+            <button class="lang-btn" data-lang="fr" onclick="applyLanguage('fr')">FR</button>
+        </div>
+        <button class="btn bs2 bsm theme-btn" onclick="toggleTheme()" style="width:100%;justify-content:center;"><span data-i18n="k14">🌙 تبديل المظهر</span></button>
+        <button class="btn bd bsm" onclick="doLogout()" style="width:100%;justify-content:center;"><span data-i18n="k15">🚪 تسجيل الخروج</span></button>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+    
+    <!-- DESKTOP TOP BAR -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.15rem;flex-wrap:wrap;gap:.5rem;">
+        <div>
+            <h1 class="gt" style="font-size:1.35rem;font-weight:800;"><span data-i18n="k1">بوابة الموزع</span></h1>
+            <p style="font-size:.75rem;color:var(--t2);"><span data-i18n="k16">إدارة الحسابات والاشتراكات التابعة ومراقبة الحصص</span></p>
+        </div>
+        <div style="display:flex;gap:.35rem;align-items:center;">
+            <button class="btn bs2 bsm" onclick="lU(false,true)"><span data-i18n="k17">🔄 تحديث</span></button>
+            <button class="btn bs2 bsm" onclick="openResellerSettings()"><span data-i18n="k105">⚙️ الإعدادات</span></button>
+            <button class="btn bs2 bsm" id="btn-open-trial" onclick="openM('mtr')"><span data-i18n="k18">⏱ تجريبي</span></button>
+            <button class="btn bs2 bsm" id="btn-open-bulk" onclick="openM('mbk')"><span data-i18n="k19">📦 جماعي</span></button>
+            <button class="btn bp bsm" onclick="openCU()"><span data-i18n="k20">+ حساب جديد</span></button>
+        </div>
+    </div>
+
+    <!-- QUOTA / CREDITS HIGHLIGHT CARD -->
+    <div id="rib" class="gc" style="padding:.85rem 1.1rem;margin-bottom:1.15rem;background:linear-gradient(135deg,rgba(9,11,22,.85),rgba(34,211,238,.1));border-color:var(--bm);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
+            <div id="ri-quota-box" style="flex:1;min-width:200px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
+                    <span style="font-size:.7rem;font-weight:700;color:var(--t2);"><span data-i18n="k21">👥 حصة الحسابات المستهلكة:</span></span>
+                    <span class="mono" style="font-size:.85rem;font-weight:800;color:var(--al);" id="ri-q">-- / --</span>
+                </div>
+                <div style="width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;">
+                    <div id="ri-progress" style="width:0%;height:100%;background:var(--a);transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <div id="ri-credits-box" class="hidden" style="flex:1;min-width:200px;">
+                <span style="font-size:.7rem;font-weight:700;color:var(--t2);"><span data-i18n="k22">💰 رصيد النقاط المتبقي:</span></span>
+                <div class="mono" style="font-size:1.2rem;font-weight:800;color:#f0c040;margin-top:.1rem;" id="ri-c"><span data-i18n="k23">-- نقطة</span></div>
+                <span style="font-size:.65rem;color:var(--t3);"><span data-i18n="k24">1 نقطة = تجديد أو إنشاء حساب لمدة 30 يوماً</span></span>
+            </div>
+
+            <div id="ri-exp-box" style="display:flex;flex-direction:column;align-items:flex-end;">
+                <span style="font-size:.68rem;font-weight:700;color:var(--t3);"><span data-i18n="k25">📅 صلاحية الموزع</span></span>
+                <span class="mono" style="font-size:.85rem;font-weight:800;color:var(--tx);margin-top:.1rem;" id="ri-e">--</span>
+                <span id="ri-days-left" class="badge bg2" style="font-size:.6rem;padding:.1rem .4rem;margin-top:.2rem;"><span data-i18n="k26">نشط</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CHIPS -->
+    <div class="sgrid">
+        <div class="gc sc"><div class="sl"><span data-i18n="k27">الحسابات التابعة</span></div><div class="sv gt" id="du">0</div><div class="sd"><span data-i18n="k28">إجمالي المسجلين لديك</span></div></div>
+        <div class="gc sc"><div class="sl"><span data-i18n="k29">المتصلون الآن</span></div><div class="sv" style="color:var(--g);" id="do">0</div><div class="sd"><span data-i18n="k30">الجلسات النشطة حالياً</span></div></div>
+        <div class="gc sc"><div class="sl"><span data-i18n="k31">حسابات منتهية</span></div><div class="sv" style="color:var(--r);" id="dexp">0</div><div class="sd"><span data-i18n="k32">تحتاج إلى تجديد</span></div></div>
+        <div class="gc sc"><div class="sl"><span data-i18n="k33">قريبة من النفاد</span></div><div class="sv" style="color:var(--y);" id="dnq">0</div><div class="sd"><span data-i18n="k34">≥80% من الحصة</span></div></div>
+    </div>
+
+    <!-- USERS MANAGEMENT CARD -->
+    <div class="gc" id="users-sec" style="padding:1.15rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem;">
+            <div>
+                <h2 style="font-size:1rem;font-weight:800;"><span data-i18n="k35">👥 قائمة المشتركين</span></h2>
+            </div>
+            <div class="sbox" style="margin-bottom:0;max-width:240px;"><input type="text" id="su" placeholder="بحث بالمستخدم..." data-i18n-ph="ph105" oninput="fU()"></div>
+        </div>
+        <div id="u-filters" style="display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 .85rem;">
+            <button class="btn bp bsm u-filter-chip" data-f="all" onclick="setUFilter('all',this)"><span data-i18n="k36">الكل</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="newest" onclick="setUFilter('newest',this)"><span data-i18n="k37">🆕 الأحدث</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="online" onclick="setUFilter('online',this)"><span data-i18n="k38">🟢 متصل</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="offline" onclick="setUFilter('offline',this)"><span data-i18n="k39">⚪ غير متصل</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="expired" onclick="setUFilter('expired',this)"><span data-i18n="k40">🔴 منتهي</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="locked" onclick="setUFilter('locked',this)"><span data-i18n="k41">🟡 متوقف</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="near_quota" onclick="setUFilter('near_quota',this)"><span data-i18n="k42">⚠️ قريب من الحصة</span></button>
+            <button class="btn bs2 bsm u-filter-chip" data-f="most_used" onclick="setUFilter('most_used',this)"><span data-i18n="k43">📊 الأكثر استهلاكًا</span></button>
+        </div>
+
+        <!-- TABLE DESKTOP -->
+        <div class="tw" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th><span data-i18n="k44">المستخدم</span></th>
+                        <th><span data-i18n="k4">كلمة المرور</span></th>
+                        <th><span data-i18n="k45">تاريخ الانتهاء</span></th>
+                        <th><span data-i18n="k46">الجلسات</span></th>
+                        <th><span data-i18n="k47">الباندويث</span></th>
+                        <th><span data-i18n="k48">الحالة</span></th>
+                        <th style="text-align:left;"><span data-i18n="k49">الإجراءات</span></th>
+                    </tr>
+                </thead>
+                <tbody id="utb"></tbody>
+            </table>
+        </div>
+
+        <!-- CARDS MOBILE -->
+        <div class="ucards" id="ucc"></div>
+    </div>
+
+</main>
+
+<!-- MOBILE BOTTOM NAVIGATION (4 BUTTONS) -->
+<nav class="bnav">
+    <div class="bni a" onclick="scrollToSec('rib')">
+        <span class="bic">📊</span><span class="blb"><span data-i18n="k50">الرئيسية</span></span>
+    </div>
+    <div class="bni" onclick="scrollToSec('users-sec')">
+        <span class="bic">👥</span><span class="blb"><span data-i18n="k51">المشتركين</span></span>
+    </div>
+    <div class="bni" onclick="openCU()">
+        <span class="bic">➕</span><span class="blb"><span data-i18n="k52">إنشاء</span></span>
+    </div>
+    <div class="bni" onclick="toggleSidebar()">
+        <span class="bic">☰</span><span class="blb"><span data-i18n="k53">القائمة</span></span>
+    </div>
+</nav>
+
+</div>
+
+<!-- MODAL: RENEWAL WIZARD -->
+<div class="mo" id="mrn"><div class="mb2">
+    <div class="mhd">
+        <h3 class="mtl"><span data-i18n="k54">🔄 تجديد الاشتراك</span></h3>
+        <button class="bi" onclick="closeM('mrn')" style="border:none;">✕</button>
+    </div>
+    <form id="frn">
+        <input type="hidden" id="rn-username">
+        
+        <!-- 1. USER SUMMARY -->
+        <div style="padding:.5rem .75rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);margin-bottom:.55rem;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <div style="font-size:.62rem;color:var(--t3);font-weight:700;"><span data-i18n="k44">المستخدم</span></div>
+                <div class="mono" style="font-size:.95rem;font-weight:800;color:var(--al);" id="rn-user-name">--</div>
+            </div>
+            <div style="text-align:left;">
+                <div style="font-size:.62rem;color:var(--t3);font-weight:700;"><span data-i18n="k55">الانتهاء الحالي</span></div>
+                <div class="mono" style="font-size:.75rem;font-weight:700;color:var(--tx);" id="rn-user-current-exp">--</div>
+                <div style="font-size:.62rem;color:var(--t3);margin-top:.1rem;" id="rn-user-current-bw">--</div>
+            </div>
+        </div>
+
+        <!-- 2. DURATION & TIME STACKING -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label><span data-i18n="k56">📅 مدة التجديد (الصلاحية)</span></label>
+            <div style="display:flex;gap:.35rem;margin-bottom:.3rem;">
+                <input type="number" id="rn-duration" value="30" min="1" required style="flex:1;" oninput="updateRenewPreview()">
+                <select id="rn-duration-unit" style="width:85px;" onchange="updateRenewPreview()">
+                    <option value="days" data-i18n="o57">أيام</option>
+                    <option value="hours" data-i18n="o58">ساعات</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:.3rem;">
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(7)"><span data-i18n="k59">+7 ي</span></button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(30)"><span data-i18n="k60">+30 ي</span></button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(60)"><span data-i18n="k61">+60 ي</span></button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(90)"><span data-i18n="k62">+90 ي</span></button>
+            </div>
+            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.7rem;color:var(--tx);">
+                <input type="checkbox" id="rn-cumulative" checked style="accent-color:var(--a);width:14px;height:14px;" onchange="updateRenewPreview()">
+                <span>🔄 <b><span data-i18n="k63">تراكمي للمدة:</span></b><span data-i18n="k64"> تضاف الأيام فوق المتبقي الحالي</span></span>
+            </label>
+        </div>
+
+        <!-- 3. BANDWIDTH STACKING & QUOTA -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label><span data-i18n="k65">📊 خيارات البيانات والباندويث</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem;margin-bottom:.35rem;">
+                <div id="rn-bw-add" onclick="setBwAction('add')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--a);background:var(--ad);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);"><span data-i18n="k66">
+                    ➕ إضافة تراكمية
+                </span></div>
+                <div id="rn-bw-reset" onclick="setBwAction('reset')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--bs);background:rgba(255,255,255,.02);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);"><span data-i18n="k67">
+                    🔄 تصفير الاستهلاك
+                </span></div>
+                <div id="rn-bw-keep" onclick="setBwAction('keep')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--bs);background:rgba(255,255,255,.02);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);"><span data-i18n="k68">
+                    ⏳ إبقاء الحالي
+                </span></div>
+            </div>
+            <!-- ADD BANDWIDTH FIELD -->
+            <div id="rn-add-bw-wrap" style="display:flex;gap:.35rem;align-items:center;">
+                <input type="number" step=".1" id="rn-add-bw" value="0" min="0" placeholder="البيانات المضافة (GB)" data-i18n-ph="ph106" style="flex:1;" oninput="updateRenewPreview()">
+                <div style="display:flex;gap:.2rem;">
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(10)">+10G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(30)">+30G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(50)">+50G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(100)">+100G</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. DEVICE LIMIT -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label><span data-i18n="k69">📱 عدد الأجهزة المسموحة</span></label>
+            <div style="display:flex;gap:.35rem;align-items:center;">
+                <input type="number" id="rn-conn-limit" value="1" min="1" required style="flex:1;">
+                <div style="display:flex;gap:.2rem;">
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=1;updateRenewPreview()">1</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=2;updateRenewPreview()">2</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=3;updateRenewPreview()">3</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. PREVIEW -->
+        <div style="padding:.5rem .7rem;background:linear-gradient(135deg,rgba(0,0,0,.35),var(--ad));border:1px solid var(--bm);border-radius:var(--rm);">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem;font-size:.72rem;">
+                <div><span style="color:var(--t3);font-size:.6rem;display:block;"><span data-i18n="k70">الانتهاء الجديد:</span></span><b class="mono" style="color:var(--tx);" id="rn-preview-new-exp">--</b></div>
+                <div><span style="color:var(--t3);font-size:.6rem;display:block;"><span data-i18n="k71">البيانات بعد التجديد:</span></span><b id="rn-preview-bw-status" style="color:var(--al);">--</b></div>
+            </div>
+            <div id="rn-credit-cost-hint" class="hidden" style="margin-top:.3rem;padding-top:.3rem;border-top:1px dashed var(--bs);font-size:.68rem;color:#f0c040;font-weight:700;"></div>
+        </div>
+
+        <div class="mft">
+            <button type="button" class="btn bs2" onclick="closeM('mrn')"><span data-i18n="k72">إلغاء</span></button>
+            <button type="submit" class="btn bp" id="btn-confirm-renew"><span data-i18n="k73">✅ تأكيد التجديد</span></button>
+        </div>
+    </form>
+</div></div>
+
+<!-- MODAL: CREATE USER -->
+<div class="mo" id="mcu"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="k74">إنشاء حساب جديد</span></h3><button class="bi" onclick="closeM('mcu')" style="border:none;">✕</button></div>
+<form id="fcu">
+    <div class="ig"><label><span data-i18n="k3">اسم المستخدم</span></label><input type="text" id="cn" required pattern="[a-zA-Z0-9_]+"></div>
+    <div class="ig"><label><span data-i18n="k4">كلمة المرور</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="cp" required style="flex:1;"><button type="button" class="btn bs2 bsm" onclick="gp('cp')"><span data-i18n="k75">توليد</span></button></div></div>
+    <div class="ig"><label><span data-i18n="k76">المدة</span></label><div style="display:flex;gap:.35rem;"><input type="number" id="cd" value="30" min="1" required style="flex:1;"><select id="cdu" style="width:85px;"><option value="days" data-i18n="o57">أيام</option><option value="hours" data-i18n="o58">ساعات</option></select></div></div>
+    <div class="ig">
+        <label><span data-i18n="k77">عدد الأجهزة المسموحة</span></label>
+        <input type="number" id="cc" value="1" min="1" required>
+        <span id="cu-conn-hint" style="font-size:.7rem;color:var(--al);margin-top:.15rem;display:block;"></span>
+    </div>
+    <div class="ir">
+        <div class="ig"><label><span data-i18n="k78">إجمالي الباندويث (GB, 0=∞)</span></label><input type="number" step=".1" id="cb" value="0" min="0"></div>
+        <div class="ig"><label><span data-i18n="k79">الباندويث اليومي (GB, 0=∞)</span></label><input type="number" step=".1" id="cdb" value="0" min="0"></div>
+    </div>
+    <div id="cq" class="hidden" style="padding:.45rem .75rem;background:var(--ad);border:1px solid var(--bm);border-radius:var(--rm);margin-bottom:.65rem;font-size:.75rem;color:var(--al);"></div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mcu')"><span data-i18n="k72">إلغاء</span></button><button type="submit" class="btn bp"><span data-i18n="k80">إنشاء الحساب</span></button></div>
+</form></div></div>
+
+<!-- MODAL: RESELLER SELF-SERVICE SETTINGS -->
+<div class="mo" id="mrset"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="k105">⚙️ الإعدادات</span></h3><button class="bi" onclick="closeM('mrset')" style="border:none;">✕</button></div>
+<form id="frset">
+    <div class="ig"><label><span data-i18n="k106">معرّف تيليجرام للدعم (بدون @)</span></label><input type="text" id="rset-telegram" placeholder="yourusername" data-i18n-ph="ph110"></div>
+    <p style="font-size:.72rem;color:var(--t3);line-height:1.6;margin-top:-.4rem;margin-bottom:.8rem;"><span data-i18n="k107">يظهر هذا الحساب في صفحة متابعة استهلاك عملائك بدل حساب المزوّد الافتراضي — اتركه فارغًا لاستخدام الافتراضي.</span></p>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mrset')"><span data-i18n="k72">إلغاء</span></button><button type="submit" class="btn bp"><span data-i18n="k104">حفظ التعديلات</span></button></div>
+</form></div></div>
+
+<!-- MODAL: TRIAL USER -->
+<div class="mo" id="mtr"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="k11">حساب تجريبي</span></h3><button class="bi" onclick="closeM('mtr')" style="border:none;">✕</button></div>
+<form id="ftr">
+    <div class="ig"><label><span data-i18n="k81">اسم المستخدم (اختياري)</span></label><input type="text" id="tn" placeholder="توليد تلقائي" data-i18n-ph="ph107"></div>
+    <div class="ig"><label><span data-i18n="k4">كلمة المرور</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="tp2" style="flex:1;" placeholder="توليد تلقائي" data-i18n-ph="ph107"><button type="button" class="btn bs2 bsm" onclick="gp('tp2')"><span data-i18n="k75">توليد</span></button></div></div>
+    <div class="ig"><label><span data-i18n="k82">المدة الزمنية</span></label><select id="th"><option value="1" data-i18n="o83">1 ساعة</option><option value="2" data-i18n="o84">2 ساعتان</option><option value="3" data-i18n="o85">3 ساعات</option><option value="6" data-i18n="o86">6 ساعات</option><option value="12" data-i18n="o87">12 ساعة</option><option value="24" data-i18n="o88">1 يوم (24 ساعة)</option><option value="72" data-i18n="o89">3 أيام</option></select></div>
+    <div class="ir"><div class="ig"><label><span data-i18n="k90">عدد الأجهزة</span></label><input type="number" id="tc2" value="1" min="1" required></div><div class="ig"><label><span data-i18n="k91">الباندويث (GB, 0=∞)</span></label><input type="number" step=".1" id="tb" value="0" min="0"></div></div>
+    <div id="tq" class="hidden" style="padding:.45rem .75rem;background:var(--ad);border:1px solid var(--bm);border-radius:var(--rm);margin-bottom:.65rem;font-size:.75rem;color:var(--al);"></div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mtr')"><span data-i18n="k72">إلغاء</span></button><button type="submit" class="btn bp"><span data-i18n="k92">إنشاء التجريبي</span></button></div>
+</form></div></div>
+
+<!-- MODAL: ACCOUNT CREDENTIALS (one clean field per value) -->
+<div class="mo" id="mcred"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="rj65">بيانات الحساب</span></h3><button class="bi" onclick="closeM('mcred')" style="border:none;">✕</button></div>
+<p style="font-size:.78rem;color:var(--t2);line-height:1.6;margin-bottom:.9rem;"><span data-i18n="rj66">انسخ كل حقل وحده والصقه في خانته المقابلة داخل التطبيق — لا تنسخ الكتلة كاملة.</span></p>
+<div class="ig"><label><span data-i18n="k3">اسم المستخدم</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="cred-u" class="mono" readonly onclick="this.select();" style="flex:1;"><button type="button" class="btn bp bsm" onclick="cF('cred-u')"><span data-i18n="rj69">📋 نسخ</span></button></div></div>
+<div class="ig"><label><span data-i18n="k4">كلمة المرور</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="cred-p" class="mono" readonly onclick="this.select();" style="flex:1;"><button type="button" class="btn bp bsm" onclick="cF('cred-p')"><span data-i18n="rj69">📋 نسخ</span></button></div></div>
+<div class="ig hidden" id="cred-link-row"><label><span data-i18n="rj67">رابط متابعة الاستهلاك</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="cred-l" class="mono" readonly onclick="this.select();" style="flex:1;"><button type="button" class="btn bs2 bsm" onclick="cF('cred-l')"><span data-i18n="rj69">📋 نسخ</span></button></div></div>
+<div id="cred-meta" class="mono" style="font-size:.75rem;color:var(--t2);padding:.5rem .7rem;background:rgba(0,0,0,.2);border-radius:var(--rm);"></div>
+<div class="mft"><button type="button" class="btn bp" onclick="closeM('mcred')"><span data-i18n="rj68">إغلاق</span></button></div></div></div>
+
+<!-- MODAL: BULK USERS -->
+<div class="mo" id="mbk"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="k93">📦 إنشاء جماعي للحسابات</span></h3><button class="bi" onclick="closeM('mbk')" style="border:none;">✕</button></div>
+<form id="fb">
+    <div id="fb-fields">
+        <div class="ir"><div class="ig"><label><span data-i18n="k94">البادئة (Prefix)</span></label><input type="text" id="bp2" value="user" required></div><div class="ig"><label><span data-i18n="k95">العدد المطلوب</span></label><input type="number" id="bc" value="5" min="1" max="50" required></div></div>
+        <div class="ir">
+            <div class="ig"><label><span data-i18n="k96">المدة لكل حساب</span></label><div style="display:flex;gap:.35rem;"><input type="number" id="bd" value="30" min="1" required style="flex:1;"><select id="bdu" style="width:85px;"><option value="days" data-i18n="o57">أيام</option><option value="hours" data-i18n="o58">ساعات</option></select></div></div>
+            <div class="ig"><label><span data-i18n="k90">عدد الأجهزة</span></label><input type="number" id="bcc" value="1" min="1" required></div>
+        </div>
+        <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mbk')"><span data-i18n="k72">إلغاء</span></button><button type="submit" class="btn bp" id="btn-submit-bulk"><span data-i18n="k97">🚀 البدء بالإنشاء</span></button></div>
+    </div>
+    <div id="fb-progress-wrap" class="hidden" style="margin-top:.75rem;padding:1rem;background:rgba(0,0,0,.25);border:1px solid var(--bs);border-radius:var(--rm);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
+            <span style="font-weight:700;font-size:.82rem;"><span data-i18n="k98">جاري الإنشاء...</span></span>
+            <span class="mono" style="font-weight:800;color:var(--al);" id="bulk-pct">0%</span>
+        </div>
+        <div style="width:100%;height:10px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden;margin-bottom:.5rem;">
+            <div id="bulk-progress-fill" style="width:0%;height:100%;background:var(--a);transition:width .2s;"></div>
+        </div>
+        <div id="bulk-result-actions" class="hidden" style="margin-top:.75rem;display:flex;gap:.5rem;">
+            <button type="button" class="btn bp bsm" style="flex:1;" id="btn-copy-bulk-list"><span data-i18n="k99">📋 نسخ الحسابات</span></button>
+            <button type="button" class="btn bs2 bsm" onclick="closeM('mbk')"><span data-i18n="k100">إغلاق</span></button>
+        </div>
+    </div>
+</form></div></div>
+
+<!-- MODAL: EDIT USER -->
+<div class="mo" id="meu"><div class="mb2"><div class="mhd"><h3 class="mtl"><span data-i18n="k101">تعديل بيانات الحساب</span></h3><button class="bi" onclick="closeM('meu')" style="border:none;">✕</button></div>
+<form id="feu"><input type="hidden" id="euh">
+    <div class="ig"><label><span data-i18n="k3">اسم المستخدم</span></label><input type="text" id="eun" disabled style="opacity:.4;"></div>
+    <div class="ig"><label><span data-i18n="k102">كلمة المرور الجديدة</span></label><div style="display:flex;gap:.4rem;"><input type="text" id="eup" style="flex:1;" placeholder="دون تغيير" data-i18n-ph="ph108"><button type="button" class="btn bs2 bsm" onclick="gp('eup')"><span data-i18n="k75">توليد</span></button></div></div>
+    <div class="ig"><label><span data-i18n="k103">تعديل الصلاحية (المدة)</span></label><div style="display:flex;gap:.35rem;"><input type="number" id="eud" min="1" placeholder="إبقاء الحالية" data-i18n-ph="ph109" style="flex:1;"><select id="eudu" style="width:85px;"><option value="days" data-i18n="o57">أيام</option><option value="hours" data-i18n="o58">ساعات</option></select></div></div>
+    <div class="ig"><label><span data-i18n="k77">عدد الأجهزة المسموحة</span></label><input type="number" id="euc" min="1" required></div>
+    <div class="ir">
+        <div class="ig"><label><span data-i18n="k78">إجمالي الباندويث (GB, 0=∞)</span></label><input type="number" step=".1" id="eub" min="0"></div>
+        <div class="ig"><label><span data-i18n="k79">الباندويث اليومي (GB, 0=∞)</span></label><input type="number" step=".1" id="eudb" min="0"></div>
+    </div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('meu')"><span data-i18n="k72">إلغاء</span></button><button type="submit" class="btn bp"><span data-i18n="k104">حفظ التعديلات</span></button></div>
+</form></div></div>
+
+<script>
+function toggleTheme(){
+    const b=document.body;b.classList.toggle('light-theme');
+    const isL=b.classList.contains('light-theme');
+    localStorage.setItem('theme',isL?'light':'dark');
+    document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent=isL?'☀️':'🌙');
+}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light-theme');document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent='☀️');}
+
+function toggleSidebar(){
+    const sb=document.getElementById('app-sidebar');
+    const ov=document.getElementById('sb-overlay');
+    sb.classList.toggle('open');
+    ov.classList.toggle('active');
+}
+
+function scrollToSec(id){
+    const el=document.getElementById(id);
+    if(el){
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    const sb=document.getElementById('app-sidebar');
+    const ov=document.getElementById('sb-overlay');
+    if(sb.classList.contains('open')){
+        sb.classList.remove('open');
+        ov.classList.remove('active');
+    }
+}
+
+let U=[],ME='',MY_TYPE='quota',MY_CREDITS=0,MY_MAX_CONN=0,MY_MAX_BW=0,MY_ALLOW_BULK=true,MY_ALLOW_TRIALS=true,MY_TELEGRAM='',_hU='';
+const E=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fB=b=>{if(!b)return'0 MB';const g=b/1073741824;return g>=1?g.toFixed(1)+'G':(b/1048576).toFixed(0)+' MB';};
+
+function T(m,t='i'){
+    const c=document.getElementById('tc');const el=document.createElement('div');
+    el.className=`toast ${t}`;el.innerHTML=`<span class="t-msg">${E(m)}</span>`;
+    c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3500);
+}
+
+function copyText(text, successMsg){
+    if(successMsg===undefined) successMsg=__i18n('rj53');
+    if(!text) return;
+    if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(()=>{
+            T(successMsg, 's');
+        }).catch(()=>{
+            _fallbackCopyText(text, successMsg);
+        });
+    }else{
+        _fallbackCopyText(text, successMsg);
+    }
+}
+function _fallbackCopyText(text, successMsg){
+    try{
+        const ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.position='fixed';ta.style.top='0';ta.style.left='0';ta.style.width='2em';ta.style.height='2em';ta.style.padding='0';ta.style.border='none';ta.style.outline='none';ta.style.boxShadow='none';ta.style.background='transparent';
+        document.body.appendChild(ta);ta.focus();ta.select();
+        const ok=document.execCommand('copy');document.body.removeChild(ta);
+        if(ok) T(successMsg, 's');
+        else T(__i18n('rj3'), 'e');
+    }catch(e){T(__i18n('rj4'), 'e');}
+}
+
+async function api(m,p,b=null){
+    const o={method:m,credentials:'same-origin',headers:{'X-Portal':'reseller'}};
+    const tk=localStorage.getItem('ff_reseller_token');
+    if(tk){o.headers['Authorization']='Bearer '+tk;o.headers['X-Session-Token']=tk;}
+    if(b){o.headers['Content-Type']='application/json';o.body=JSON.stringify(b);}
+    const r=await fetch(p,o);
+    if(r.status===401&&p!=='/api/login'){localStorage.removeItem('ff_reseller_token');sL();throw new Error(__i18n('rj1'));}
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||__i18n('rj2'));
+    return d;
+}
+
+function openM(id){document.getElementById(id).classList.add('active');}
+function closeM(id){document.getElementById(id).classList.remove('active');}
+function gp(id){const c='abcdefghjkmnpqrstuvwxyz23456789';let p='';for(let i=0;i<8;i++)p+=c.charAt(Math.floor(Math.random()*c.length));document.getElementById(id).value=p;}
+
+function renderResellerInfo(ri, userCount){
+    if(!ri) return;
+    MY_TYPE = ri.type || 'quota';
+    MY_CREDITS = ri.credits || 0;
+    if(ri.max_conn_per_user) MY_MAX_CONN = ri.max_conn_per_user;
+    if(ri.allow_bulk !== undefined) MY_ALLOW_BULK = ri.allow_bulk;
+    if(ri.allow_trials !== undefined) MY_ALLOW_TRIALS = ri.allow_trials;
+    MY_TELEGRAM = ri.telegram_contact || '';
+
+    if(MY_TYPE === 'credits'){
+        document.getElementById('ri-quota-box').classList.add('hidden');
+        document.getElementById('ri-credits-box').classList.remove('hidden');
+        document.getElementById('ri-c').textContent = `${MY_CREDITS} ${__i18n('rj5')}`;
+        document.getElementById('ri-exp-box').style.display = 'none';
+    }else{
+        document.getElementById('ri-quota-box').classList.remove('hidden');
+        document.getElementById('ri-credits-box').classList.add('hidden');
+        const cr = (ri.created_users !== undefined) ? ri.created_users : (userCount || 0);
+        const mx = ri.max_users || 1;
+        document.getElementById('ri-q').textContent = `${cr} / ${mx} ${__i18n('rj6')}`;
+        const pct = Math.min(100, Math.round((cr / mx) * 100));
+        document.getElementById('ri-progress').style.width = `${pct}%`;
+        
+        document.getElementById('ri-exp-box').style.display = 'flex';
+        const expStr = ri.expire_date || '--';
+        document.getElementById('ri-e').textContent = expStr;
+        
+        const tag = document.getElementById('ri-days-left');
+        if(tag){
+            if(expStr && expStr !== 'N/A' && expStr !== '--' && !expStr.includes('غير محدود') && !expStr.includes('Unlimited')){
+                const target = new Date(expStr.replace(' ', 'T'));
+                const now = new Date();
+                const diffDays = Math.ceil((target - now) / 86400000);
+                if(diffDays <= 0){
+                    tag.className = 'badge br'; tag.textContent = __i18n('rj7');
+                }else if(diffDays <= 3){
+                    tag.className = 'badge by'; tag.textContent = `${__i18n('rj8')} ${diffDays} ${__i18n('rj9')}`;
+                }else{
+                    tag.className = 'badge bg2'; tag.textContent = `${__i18n('rj8')} ${diffDays} ${__i18n('rj9')}`;
+                }
+            }else{
+                tag.className = 'badge bg2'; tag.textContent = __i18n('k26');
+            }
+        }
+    }
+}
+
+function openResellerSettings(){
+    document.getElementById('rset-telegram').value = MY_TELEGRAM || '';
+    openM('mrset');
+}
+document.getElementById('frset').addEventListener('submit', async e => {
+    e.preventDefault();
+    try{
+        const r = await api('PUT', '/api/reseller/telegram', {
+            telegram_contact: document.getElementById('rset-telegram').value.trim()
+        });
+        MY_TELEGRAM = r.telegram_contact || '';
+        closeM('mrset');
+        T(__i18n('j28'), 's');
+    }catch(err){ T(err.message, 'e'); }
+});
+
+async function init(){
+    try{
+        const br=await api('GET','/api/branding');
+        if(br){
+            document.getElementById('login-name').textContent=br.panel_name||__i18n('k1');
+            document.getElementById('mh-name').textContent=br.panel_name||'DAHOOM';
+            document.getElementById('sb-name').textContent=br.panel_name||'DAHOOM';
+        }
+    }catch(e){}
+    try{
+        const m=await api('GET','/api/me');
+        if(m.role!=='reseller'&&m.role!=='admin'){sL();return;}
+        ME=m.username;
+        MY_TYPE=m.reseller_type||m.type||'quota';
+        MY_CREDITS=m.credits||0;
+        MY_MAX_CONN=m.max_conn_per_user||0;
+        MY_MAX_BW=m.max_bw_per_user||0;
+        MY_ALLOW_BULK=m.allow_bulk!==false;
+        MY_ALLOW_TRIALS=m.allow_trials!==false;
+        document.getElementById('sb-user-display').textContent=`🤝 ${ME}`;
+        if(m.reseller_info) renderResellerInfo(m.reseller_info, m.created_users);
+        else renderResellerInfo(m, m.created_users);
+        document.getElementById('lv').classList.add('hidden');
+        sA();
+    }catch(e){
+        document.getElementById('lv').classList.add('hidden');
+        sL();
+    }
+}
+document.addEventListener('DOMContentLoaded',init);
+
+function sL(){document.getElementById('av').classList.add('hidden');document.getElementById('lview').classList.remove('hidden');}
+function sA(){
+    document.getElementById('lview').classList.add('hidden');
+    document.getElementById('av').classList.remove('hidden');
+    if(!MY_ALLOW_BULK){
+        const b=document.getElementById('btn-open-bulk');if(b)b.classList.add('hidden');
+        const sbb=document.getElementById('sb-bulk-link');if(sbb)sbb.classList.add('hidden');
+    }
+    if(!MY_ALLOW_TRIALS){
+        const t=document.getElementById('btn-open-trial');if(t)t.classList.add('hidden');
+        const sbt=document.getElementById('sb-trial-link');if(sbt)sbt.classList.add('hidden');
+    }
+    lD();lU();
+}
+
+async function doLogout(){try{await api('POST','/api/logout',{portal:'reseller'});}catch(e){}localStorage.removeItem('ff_reseller_token');sL();}
+
+document.getElementById('lf').addEventListener('submit',async e=>{
+    e.preventDefault();const b=document.getElementById('lb');b.disabled=true;b.textContent=__i18n('rj10');
+    try{
+        const u = document.getElementById('lu').value.trim();
+        const p = document.getElementById('lp').value.trim();
+        const res = await api('POST','/api/login',{username:u,password:p,portal:'reseller'});
+        if(res && res.token) localStorage.setItem('ff_reseller_token', res.token);
+        const m=await api('GET','/api/me');
+        ME=m.username;
+        MY_TYPE=m.reseller_type||m.type||'quota';
+        MY_CREDITS=m.credits||0;
+        MY_MAX_CONN=m.max_conn_per_user||0;
+        MY_MAX_BW=m.max_bw_per_user||0;
+        MY_ALLOW_BULK=m.allow_bulk!==false;
+        MY_ALLOW_TRIALS=m.allow_trials!==false;
+        document.getElementById('sb-user-display').textContent=`🤝 ${ME}`;
+        if(m.reseller_info) renderResellerInfo(m.reseller_info, m.created_users);
+        else renderResellerInfo(m, m.created_users);
+        T(__i18n('rj11'),'s');
+        sA();
+    }catch(e){T(e.message,'e');}finally{b.disabled=false;b.textContent=__i18n('k5');}
+});
+
+async function lD(){
+    try{
+        const d=await api('GET','/api/dashboard');
+        document.getElementById('du').textContent=d.user_count||0;
+        document.getElementById('do').textContent=d.online_sessions||0;
+        document.getElementById('dexp').textContent=d.expired_accounts||0;
+        document.getElementById('dnq').textContent=d.near_quota||0;
+        
+        if(d.reseller_info) renderResellerInfo(d.reseller_info, d.user_count);
+    }catch(e){}
+}
+
+async function lU(s=false,forceFresh=false){
+    try{
+        const d=await api('GET','/api/users');
+        const h=JSON.stringify(d);
+        if(s&&!forceFresh&&h===_hU)return;
+        _hU=h;U=d.users||[];
+        const si=document.getElementById('su');
+        if(document.activeElement!==si||!si.value)fU();
+        if(!s&&forceFresh)T(__i18n('rj12'),'s');
+    }catch(e){if(!s)T(__i18n('rj13'),'e');}
+}
+
+let _uFilter='all';
+function setUFilter(f,btn){
+    _uFilter=f;
+    document.querySelectorAll('.u-filter-chip').forEach(b=>{b.classList.remove('bp');b.classList.add('bs2');});
+    if(btn){btn.classList.remove('bs2');btn.classList.add('bp');}
+    fU();
+}
+function fU(){
+    const q=document.getElementById('su').value.toLowerCase();
+    let list=U.filter(u=>u.username.toLowerCase().includes(q));
+    switch(_uFilter){
+        case 'newest': list=list.slice().reverse(); break;
+        case 'online': list=list.filter(u=>u.online_sessions>0); break;
+        case 'offline': list=list.filter(u=>!u.online_sessions); break;
+        case 'expired': list=list.filter(u=>u.is_expired); break;
+        case 'locked': list=list.filter(u=>u.is_locked); break;
+        case 'near_quota': list=list.filter(u=>u.bandwidth_gb>0 && (u.total_used_bytes/(u.bandwidth_gb*1073741824))>=0.9); break;
+        case 'most_used': list=list.slice().sort((a,b)=>(b.total_used_bytes||0)-(a.total_used_bytes||0)); break;
+    }
+    rU(list);
+}
+
+function rU(list){
+    const tb=document.getElementById('utb'),cards=document.getElementById('ucc');
+    tb.innerHTML='';cards.innerHTML='';
+    if(!list.length){
+        tb.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:1.5rem;">${__i18n('rj14')}</td></tr>`;
+        cards.innerHTML=`<div class="gc" style="text-align:center;color:var(--t3);padding:1.5rem;">${__i18n('rj14')}</div>`;
+        return;
+    }
+    list.forEach(u=>{
+        const bg=u.is_expired?`<span class="badge br">${__i18n('rj7')}</span>`:u.is_locked?`<span class="badge by">${__i18n('rj15')}</span>`:`<span class="badge bg2">${__i18n('k26')}</span>`;
+        const bw=u.bandwidth_gb>0?`${fB(u.total_used_bytes)}/${u.bandwidth_gb}G`:`${fB(u.total_used_bytes)}/∞`;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+        <td class="mono" style="font-weight:700;color:var(--al);">${E(u.username)}</td>
+        <td><span class="mono" style="color:var(--t2);font-size:.78rem;" id="p-${u.username}">••••••</span> <span style="cursor:pointer;font-size:.75rem;" onclick="tp('p-${u.username}','${E(u.password)}')">👁</span></td>
+        <td><span class="mono" style="font-size:.78rem;">${u.expire_date}</span></td>
+        <td><span style="color:${u.online_sessions?'var(--g)':'inherit'};font-weight:700;">${u.online_sessions}</span>/${u.conn_limit}</td>
+        <td class="mono" style="font-size:.78rem;">${bw}</td>
+        <td>${bg}</td>
+        <td><div class="tda">
+            <button class="bi" title="${__i18n('rj16')}" onclick="cA('${E(u.username)}','${E(u.password)}','${u.expire_date}',${u.bandwidth_gb},${u.conn_limit})">📋</button>
+            <button class="bi" title="${__i18n('rj17')}" onclick="eU('${E(u.username)}',${u.conn_limit},${u.bandwidth_gb})">✏️</button>
+            <button class="bi" title="${__i18n('rj18')}" onclick="rnU('${E(u.username)}')">🔄</button>
+            <button class="bi" title="${__i18n('rj19')}" onclick="showBwLink('${E(u.username)}')">📊</button>
+            ${u.is_locked?`<button class="bi" title="${__i18n('rj20')}" onclick="lkU('${E(u.username)}',0)">🔓</button>`:`<button class="bi" title="${__i18n('rj21')}" onclick="lkU('${E(u.username)}',1)">🔒</button>`}
+            <button class="bi" title="${__i18n('rj22')}" style="color:var(--r);" onclick="dU('${E(u.username)}')">🗑</button>
+        </div></td>`;
+        tb.appendChild(tr);
+
+        const c=document.createElement('div');c.className='gc uc';
+        c.innerHTML=`
+        <div class="ucb">
+            <div class="uct"><span class="ucn">${E(u.username)}</span>${bg}</div>
+            <div class="ucg">
+                <div class="uf"><span class="ufl">${__i18n('k4')}</span><span class="ufv"><span class="mono" id="mp-${u.username}">••••••</span> <span style="cursor:pointer;" onclick="tp('mp-${u.username}','${E(u.password)}')">👁</span></span></div>
+                <div class="uf"><span class="ufl">${__i18n('rj23')}</span><span class="ufv mono">${u.expire_date}</span></div>
+                <div class="uf"><span class="ufl">${__i18n('k46')}</span><span class="ufv"><b>${u.online_sessions}</b> / ${u.conn_limit}</span></div>
+                <div class="uf"><span class="ufl">${__i18n('k47')}</span><span class="ufv mono">${bw}</span></div>
+            </div>
+        </div>
+        <div class="uca">
+            <button class="uact" onclick="cA('${E(u.username)}','${E(u.password)}','${u.expire_date}',${u.bandwidth_gb},${u.conn_limit})"><span>📋</span>${__i18n('rj16')}</button>
+            <button class="uact" onclick="eU('${E(u.username)}',${u.conn_limit},${u.bandwidth_gb})"><span>✏️</span>${__i18n('rj17')}</button>
+            <button class="uact" onclick="rnU('${E(u.username)}')"><span>🔄</span>${__i18n('rj18')}</button>
+            <button class="uact" onclick="showBwLink('${E(u.username)}')"><span>📊</span>${__i18n('rj19b')}</button>
+            <button class="uact dng" onclick="dU('${E(u.username)}')"><span>🗑</span>${__i18n('rj22')}</button>
+        </div>`;
+        cards.appendChild(c);
+    });
+}
+
+function tp(id,p){const e=document.getElementById(id);if(e)e.textContent=e.textContent==='••••••'?p:'••••••';}
+
+function openCU(){
+    gp('cp');
+    const cc=document.getElementById('cc');
+    if(MY_MAX_CONN>0){cc.max=MY_MAX_CONN;cc.value=1;document.getElementById('cu-conn-hint').textContent=`${__i18n('rj24')} ${MY_MAX_CONN}`;}
+    else{cc.removeAttribute('max');document.getElementById('cu-conn-hint').textContent='';}
+    if(MY_TYPE==='credits'){document.getElementById('cq').innerHTML=`${__i18n('rj25')} <b>${MY_CREDITS}</b> ${__i18n('rj26')}`;document.getElementById('cq').classList.remove('hidden');}
+    else{document.getElementById('cq').classList.add('hidden');}
+    openM('mcu');
+}
+
+document.getElementById('fcu').addEventListener('submit',async e=>{
+    e.preventDefault();
+    try{
+        const res=await api('POST','/api/users',{
+            username:document.getElementById('cn').value,
+            password:document.getElementById('cp').value,
+            duration:document.getElementById('cd').value,
+            duration_unit:document.getElementById('cdu').value,
+            conn_limit:+document.getElementById('cc').value,
+            bandwidth_gb:+document.getElementById('cb').value,
+            daily_bandwidth_gb:+document.getElementById('cdb').value
+        });
+        closeM('mcu');document.getElementById('fcu').reset();
+        T(__i18n('rj27'),'s');
+        if(res&&res.username)showCreds(res.username,res.password,res.expire_date,res.conn_limit,res.bandwidth_gb,res.bandwidth_link);
+        lU();lD();
+    }catch(e){T(e.message,'e');}
+});
+
+// The trial and bulk modals open fine, but their forms were never wired to a
+// submit handler here (unlike the admin panel) — so both buttons did a native
+// form submit: the page just reloaded and no account was ever created.
+document.getElementById('ftr').addEventListener('submit',async e=>{
+    e.preventDefault();
+    try{
+        const r=await api('POST','/api/users/trial',{
+            username:document.getElementById('tn').value,
+            password:document.getElementById('tp2').value,
+            hours:+document.getElementById('th').value,
+            conn_limit:+document.getElementById('tc2').value,
+            bandwidth_gb:+(document.getElementById('tb').value||0)
+        });
+        closeM('mtr');document.getElementById('ftr').reset();
+        T(__i18n('rj70'),'s');
+        showCreds(r.username,r.password,r.expiry_time||r.expire_date,r.conn_limit,r.bandwidth_gb,r.bandwidth_link);
+        lU();lD();
+    }catch(err){T(err.message,'e');}
+});
+
+document.getElementById('fb').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const count=+document.getElementById('bc').value;
+    const prefix=document.getElementById('bp2').value;
+    const dval=+document.getElementById('bd').value;
+    const dunit=document.getElementById('bdu').value;
+    const conn=+document.getElementById('bcc').value;
+    const fields=document.getElementById('fb-fields');
+    const pWrap=document.getElementById('fb-progress-wrap');
+    const pFill=document.getElementById('bulk-progress-fill');
+    const pPct=document.getElementById('bulk-pct');
+    const resActions=document.getElementById('bulk-result-actions');
+
+    fields.classList.add('hidden');
+    pWrap.classList.remove('hidden');
+    resActions.classList.add('hidden');
+    pFill.style.background='var(--a)';pPct.style.color='var(--al)';
+    pFill.style.width='10%';pPct.textContent='10%';
+
+    let sim=10;
+    const iv=setInterval(()=>{if(sim<85){sim=Math.min(85,sim+Math.floor(Math.random()*15)+5);pFill.style.width=sim+'%';pPct.textContent=sim+'%';}},150);
+    try{
+        const r=await api('POST','/api/users/bulk',{
+            prefix:prefix,count:count,
+            duration_value:dval,duration_unit:dunit,
+            days:dunit==='days'?dval:0,
+            hours:dunit==='hours'?dval:0,
+            conn_limit:conn
+        });
+        clearInterval(iv);
+        pFill.style.width='100%';pFill.style.background='linear-gradient(90deg,#22c55e,#10b981)';
+        pPct.textContent='100%';pPct.style.color='#22c55e';
+        const created=r.users||[];
+        T(`${__i18n('rj71')} (${created.length})`,'s');
+        resActions.classList.remove('hidden');
+        // Tab-separated and emoji-free, so it pastes cleanly into a sheet or note.
+        let txt=`${__i18n('rj72')} (${created.length}):\n`;
+        created.forEach(u=>{txt+=`${u.username}\t${u.password}\t${u.expire_date}\n`;});
+        document.getElementById('btn-copy-bulk-list').onclick=()=>copyText(txt,__i18n('rj52'));
+        lU();lD();
+    }catch(err){
+        clearInterval(iv);
+        pFill.style.width='100%';pFill.style.background='linear-gradient(90deg,#ef4444,#dc2626)';
+        pPct.textContent=__i18n('rj73');pPct.style.color='var(--r)';
+        T(err.message||__i18n('rj73'),'e');
+        setTimeout(()=>{fields.classList.remove('hidden');pWrap.classList.add('hidden');},3000);
+    }
+});
+
+function eU(u,c,b){
+    document.getElementById('euh').value=u;document.getElementById('eun').value=u;document.getElementById('euc').value=c||1;document.getElementById('eub').value=b||0;
+    openM('meu');
+}
+
+document.getElementById('feu').addEventListener('submit',async e=>{
+    e.preventDefault();const u=document.getElementById('euh').value;
+    const body={conn_limit:+document.getElementById('euc').value,bandwidth_gb:+document.getElementById('eub').value,daily_bandwidth_gb:+document.getElementById('eudb').value};
+    const p=document.getElementById('eup').value;if(p)body.password=p;
+    const d=document.getElementById('eud').value;if(d){body.duration=d;body.duration_unit=document.getElementById('eudu').value;}
+    try{await api('PUT',`/api/users/${u}`,body);T(__i18n('rj28'),'s');closeM('meu');lU();}catch(e){T(e.message,'e');}
+});
+
+let _currentRenewUser=null;
+let _currentBwAction='add';
+
+function rnU(u){
+    _currentRenewUser = U.find(x => x.username === u) || { username: u, expire_date: '--', bandwidth_gb: 0, total_used_bytes: 0, conn_limit: 1 };
+    _currentBwAction = 'add';
+    document.getElementById('rn-username').value = _currentRenewUser.username;
+    document.getElementById('rn-user-name').textContent = _currentRenewUser.username;
+    document.getElementById('rn-user-current-exp').textContent = _currentRenewUser.expire_date || '--';
+    
+    const bwTxt = _currentRenewUser.bandwidth_gb > 0 ? `${fB(_currentRenewUser.total_used_bytes)} / ${_currentRenewUser.bandwidth_gb} GB` : __i18n('rj29');
+    const curBwEl = document.getElementById('rn-user-current-bw');
+    if(curBwEl) curBwEl.textContent = `${__i18n('rj30')} ${bwTxt}`;
+
+    document.getElementById('rn-duration').value = '30';
+    document.getElementById('rn-duration-unit').value = 'days';
+    document.getElementById('rn-add-bw').value = _currentRenewUser.bandwidth_gb > 0 ? _currentRenewUser.bandwidth_gb : '0';
+    
+    const connEl = document.getElementById('rn-conn-limit');
+    if(connEl){
+        connEl.value = _currentRenewUser.conn_limit || 1;
+        if(MY_MAX_CONN > 0) connEl.max = MY_MAX_CONN;
+        else connEl.removeAttribute('max');
+    }
+    const cumEl = document.getElementById('rn-cumulative');
+    if(cumEl) cumEl.checked = true;
+    
+    setBwAction('add');
+    openM('mrn');
+}
+
+function setBwAction(act){
+    _currentBwAction = act;
+    const btnAdd = document.getElementById('rn-bw-add');
+    const btnReset = document.getElementById('rn-bw-reset');
+    const btnKeep = document.getElementById('rn-bw-keep');
+    const wrapAdd = document.getElementById('rn-add-bw-wrap');
+    
+    [btnAdd, btnReset, btnKeep].forEach(b => {
+        if(b){ b.style.borderColor = 'var(--bs)'; b.style.background = 'rgba(255,255,255,.02)'; b.style.color = 'var(--tx)'; }
+    });
+    
+    if(act === 'add'){
+        if(btnAdd){ btnAdd.style.borderColor = 'var(--a)'; btnAdd.style.background = 'var(--ad)'; }
+        if(wrapAdd) wrapAdd.style.display = 'flex';
+    }else if(act === 'reset'){
+        if(btnReset){ btnReset.style.borderColor = 'var(--g)'; btnReset.style.background = 'rgba(16,185,129,.12)'; }
+        if(wrapAdd) wrapAdd.style.display = 'none';
+    }else{
+        if(btnKeep){ btnKeep.style.borderColor = 'var(--y)'; btnKeep.style.background = 'rgba(245,158,11,.12)'; }
+        if(wrapAdd) wrapAdd.style.display = 'none';
+    }
+    updateRenewPreview();
+}
+
+function setAddBw(gb){
+    document.getElementById('rn-add-bw').value = gb;
+    updateRenewPreview();
+}
+
+function setRenewDays(days){
+    document.getElementById('rn-duration').value = days;
+    document.getElementById('rn-duration-unit').value = 'days';
+    updateRenewPreview();
+}
+
+function updateRenewPreview(){
+    if(!_currentRenewUser) return;
+    const val = parseInt(document.getElementById('rn-duration').value) || 1;
+    const unit = document.getElementById('rn-duration-unit').value;
+    const isCum = document.getElementById('rn-cumulative') ? document.getElementById('rn-cumulative').checked : true;
+
+    let base = new Date();
+    if(isCum && _currentRenewUser.expire_date && _currentRenewUser.expire_date !== '--'){
+        const p = new Date(_currentRenewUser.expire_date.replace(' ', 'T'));
+        if(!isNaN(p.getTime()) && p > base) base = p;
+    }
+    let target = new Date(base.getTime());
+    if(unit === 'hours') target.setHours(target.getHours() + val);
+    else target.setDate(target.getDate() + val);
+    const yr = target.getFullYear();
+    const mo = String(target.getMonth() + 1).padStart(2, '0');
+    const da = String(target.getDate()).padStart(2, '0');
+    const hr = String(target.getHours()).padStart(2, '0');
+    const mi = String(target.getMinutes()).padStart(2, '0');
+    let formatted = `${yr}-${mo}-${da}`;
+    if(unit === 'hours' || (target.getHours() !== 0 || target.getMinutes() !== 0)){
+        formatted += ` ${hr}:${mi}`;
+    }
+    const expEl = document.getElementById('rn-preview-new-exp');
+    if(expEl) expEl.textContent = formatted;
+
+    const bwStatusEl = document.getElementById('rn-preview-bw-status');
+    if(bwStatusEl){
+        const curLimit = parseFloat(_currentRenewUser.bandwidth_gb || 0);
+        if(_currentBwAction === 'add'){
+            const added = parseFloat(document.getElementById('rn-add-bw').value) || 0;
+            if(added > 0){
+                const total = curLimit > 0 ? (curLimit + added) : added;
+                bwStatusEl.textContent = `+${added} GB (${__i18n('rj31')} ${total} GB)`;
+                bwStatusEl.style.color = 'var(--al)';
+            }else{
+                bwStatusEl.textContent = curLimit > 0 ? `${curLimit} GB (${__i18n('rj32')})` : __i18n('rj29');
+                bwStatusEl.style.color = 'var(--t2)';
+            }
+        }else if(_currentBwAction === 'reset'){
+            bwStatusEl.textContent = __i18n('rj33');
+            bwStatusEl.style.color = 'var(--g)';
+        }else{
+            bwStatusEl.textContent = curLimit > 0 ? `${curLimit} GB (${__i18n('rj34')})` : __i18n('rj29');
+            bwStatusEl.style.color = 'var(--t2)';
+        }
+    }
+
+    const hintEl = document.getElementById('rn-credit-cost-hint');
+    if(hintEl && MY_TYPE === 'credits'){
+        const cost = unit === 'hours' ? Math.max(1, Math.ceil(val / 720)) : Math.max(1, Math.ceil(val / 30));
+        hintEl.textContent = `${__i18n('rj35')} ${cost} ${__i18n('rj36')} (${MY_CREDITS} ${__i18n('rj5')})`;
+        hintEl.classList.remove('hidden');
+    }else if(hintEl){
+        hintEl.classList.add('hidden');
+    }
+}
+
+document.getElementById('frn').addEventListener('submit', async e => {
+    e.preventDefault();
+    const u = document.getElementById('rn-username').value;
+    const val = parseInt(document.getElementById('rn-duration').value) || 30;
+    const unit = document.getElementById('rn-duration-unit').value;
+    const connLimit = parseInt(document.getElementById('rn-conn-limit').value) || 1;
+    const isCum = document.getElementById('rn-cumulative') ? document.getElementById('rn-cumulative').checked : true;
+    
+    let resetBw = false;
+    let addBw = 0;
+    if(_currentBwAction === 'reset'){
+        resetBw = true;
+    }else if(_currentBwAction === 'add'){
+        addBw = parseFloat(document.getElementById('rn-add-bw').value) || 0;
+    }
+
+    const btn = document.getElementById('btn-confirm-renew');
+    btn.disabled = true;
+    btn.textContent = __i18n('rj37');
+    try {
+        const body = {
+            duration_value: val,
+            duration_unit: unit,
+            bw_action: _currentBwAction,
+            reset_bandwidth: resetBw,
+            add_bandwidth_gb: addBw,
+            conn_limit: connLimit,
+            cumulative: isCum
+        };
+        const res = await api('POST', `/api/users/${u}/renew`, body);
+        T(`${__i18n('rj38')} ${u} ${__i18n('rj39')} (${connLimit} ${__i18n('rj40')})`, 's');
+        closeM('mrn');
+        lU();
+        lD();
+    } catch(err) {
+        T(err.message || __i18n('rj41'), 'e');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = __i18n('k73');
+    }
+});
+
+async function lkU(u,lk){
+    try{await api('POST',`/api/users/${u}/lock`,{locked:lk===1});T(lk===1?__i18n('rj42'):__i18n('rj43'),'s');lU();lD();}catch(e){T(e.message,'e');}
+}
+
+async function dU(u){
+    if(!confirm(`${__i18n('rj44')} ${u} ${__i18n('rj45')}`))return;
+    try{await api('DELETE',`/api/users/${u}`);T(__i18n('rj46'),'s');lU();lD();}catch(e){T(e.message,'e');}
+}
+
+// Copies ONE field's exact value — never a decorated multi-line block.
+// A blob like "👤 user\n🔑 pass\n📅 date" pasted into an app's Username box
+// arrives at sshd as one long invalid username (real bug seen in the wild),
+// so credentials are only ever handed over one clean field at a time.
+function cF(id){const el=document.getElementById(id);if(!el)return;try{el.select();el.setSelectionRange(0,el.value.length);}catch(e){}copyText(el.value, __i18n('rj52'));}
+function showCreds(u,p,e,c,b,link){
+    document.getElementById('cred-u').value=u||'';
+    document.getElementById('cred-p').value=p||'';
+    const lr=document.getElementById('cred-link-row');
+    if(link){document.getElementById('cred-l').value=link;lr.classList.remove('hidden');}
+    else{document.getElementById('cred-l').value='';lr.classList.add('hidden');}
+    const parts=[];
+    if(e)parts.push(`${__i18n('k45')}: ${e}`);
+    if(c)parts.push(`${__i18n('rj50')} ${c}`);
+    parts.push(`${__i18n('k47')}: ${b>0?b+' GB':__i18n('rj51')}`);
+    document.getElementById('cred-meta').textContent=parts.join('  •  ');
+    openM('mcred');
+}
+let _credReqUser=null;
+async function cA(u,p,e,b,c){
+    showCreds(u,p,e,c,b);
+    // The dialog opens instantly with what we already have; the usage link
+    // isn't part of the accounts list response, so fetch it separately and
+    // fill it in once it arrives — but only if this is still the account
+    // on screen (a fast second click on another row must not have its link
+    // land on the wrong dialog).
+    _credReqUser=u;
+    try{
+        const res=await api('GET',`/api/users/${encodeURIComponent(u)}/bandwidth-link`);
+        if(_credReqUser===u && res && res.link){
+            document.getElementById('cred-l').value=res.link;
+            document.getElementById('cred-link-row').classList.remove('hidden');
+        }
+    }catch(e){/* leave the link row hidden if it can't be fetched */}
+}
+
+async function showBwLink(username){
+    try{
+        const res=await api('GET',`/api/users/${encodeURIComponent(username)}/bandwidth-link`);
+        if(res && res.link){
+            copyText(res.link, __i18n('rj53b'));
+            const statusTxt = res.enabled===false ? __i18n('rj54') : __i18n('rj55');
+            const actionTxt = res.enabled===false ? __i18n('rj56') : __i18n('rj57');
+            const askToggle = confirm(`${__i18n('rj58')}\n${res.link}\n\n${__i18n('rj59')} ${statusTxt}\n\n${__i18n('rj60')} ${actionTxt}${__i18n('rj61')}`);
+            if(askToggle){
+                await toggleBwLink(username, res.enabled===false);
+            }
+        }else{
+            T(__i18n('rj62'),'e');
+        }
+    }catch(e){T(e.message,'e');}
+}
+async function toggleBwLink(username, enable){
+    try{
+        await api('POST',`/api/users/${encodeURIComponent(username)}/bandwidth-link/toggle`,{enabled:enable});
+        T(enable?__i18n('rj63'):__i18n('rj64'),'s');
+    }catch(e){T(e.message,'e');}
+}
+
+// Auto-poll reseller accounts every 8 seconds
+setInterval(()=>{if(!document.getElementById('av').classList.contains('hidden'))lU(true);},8000);
+</script>
+</body>
+</html>
