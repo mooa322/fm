@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بوابة الموزع | لوحة التحكم</title>
+    <!-- GOOGLE FONTS (Rubik & JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#05060f;--c1:rgba(255,255,255,.045);--c2:rgba(255,255,255,.075);--ci:#0a0e1a;
+            --bs:rgba(255,255,255,.085);--bm:rgba(34,211,238,.34);
+            --a:#22d3ee;--al:#7dd3fc;--ad:rgba(34,211,238,.14);--a2:#a855f7;--a2d:rgba(168,85,247,.14);
+            --grad:linear-gradient(135deg,#22d3ee 0%,#818cf8 50%,#a855f7 100%);
+            --t:#38bdf8;--td:rgba(56,189,248,.12);
+            --g:#34d399;--gd:rgba(52,211,153,.13);--r:#fb7185;--rd:rgba(251,113,133,.14);--y:#fbbf24;
+            --tx:#eef2ff;--t2:#a5b4d4;--t3:#6b7a9e;--rs:8px;--rm:12px;--rl:20px;--sb:env(safe-area-inset-bottom,0px);
+            --lit:inset 0 1px 0 rgba(255,255,255,.11);
+            --sh2:0 12px 32px -8px rgba(0,0,0,.55);--sh3:0 28px 70px -18px rgba(0,0,0,.75);
+            --ease:cubic-bezier(.16,1,.3,1);
+            --f:'Rubik',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+            --m:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+        }
+        html{min-height:100%;background:#05060f;background-image:radial-gradient(ellipse 70% 55% at 88% -8%,rgba(34,211,238,.16),transparent 60%),radial-gradient(ellipse 70% 55% at 10% 108%,rgba(168,85,247,.15),transparent 60%);background-attachment:fixed;}
+        *, button, input, select, textarea, label {
+            box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+            font-family:var(--f)!important;
+        }
+        body{background:transparent;color:var(--tx);font-family:var(--f);min-height:100dvh;overflow-x:hidden;font-size:14px;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:linear-gradient(var(--a),var(--a2));border-radius:6px;}
+        .gt{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+        .mono{font-family:var(--m)!important;direction:ltr;display:inline-block;}.hidden{display:none!important;}
+        .gc{background:linear-gradient(158deg,#151b2e,#0d1220);border:1px solid var(--bs);border-radius:var(--rl);box-shadow:var(--lit),var(--sh2);transition:border-color .3s var(--ease),box-shadow .3s var(--ease),transform .3s var(--ease);}
+        .gc:hover{border-color:var(--bm);box-shadow:var(--lit),var(--sh3),0 0 32px -6px rgba(34,211,238,.22);}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.48rem .85rem;border-radius:var(--rm);font-size:.82rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:color .15s,background-color .15s,border-color .15s;white-space:nowrap;user-select:none;}
+        .btn:active{transform:scale(.96);}
+        .bp{background:var(--grad);background-size:180% 100%;color:#04121a;font-weight:800;box-shadow:0 4px 18px -4px rgba(34,211,238,.5),var(--lit);border-color:rgba(255,255,255,.14);}
+        .bp:hover{background-position:100% 0;box-shadow:0 8px 30px -6px rgba(34,211,238,.7);transform:translateY(-1px);}
+        .bs2{background:rgba(255,255,255,.04);color:var(--tx);border-color:var(--bs);}
+        .bs2:hover{background:rgba(255,255,255,.08);border-color:var(--bm);}
+        .bd{background:var(--rd);color:#fca5a5;border-color:rgba(239,68,68,.2);}
+        .bsm{padding:.35rem .65rem;font-size:.75rem;border-radius:var(--rs);}
+        .bi{width:32px;height:32px;min-width:32px;padding:0;border-radius:var(--rm);background:rgba(255,255,255,.04);color:var(--t2);border:1px solid var(--bs);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:color .15s,background-color .15s,border-color .15s;font-size:.85rem;}
+        .bi:hover{color:var(--al);background:var(--ad);border-color:var(--bm);}
+        .ig{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.6rem;}
+        .ig label{font-size:.68rem;font-weight:700;color:var(--t2);letter-spacing:.01em;}
+        .ig input,.ig select{width:100%;padding:.45rem .7rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);color:var(--tx);font-size:.82rem;outline:none;transition:color .2s,background-color .2s,border-color .2s;}
+        .ig input:focus,.ig select:focus{border-color:var(--a);box-shadow:0 0 0 2px var(--ad);}
+        .ir{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;}
+        #tc{position:fixed;top:.75rem;right:50%;transform:translateX(50%);z-index:9999;display:flex;flex-direction:column;gap:.4rem;pointer-events:none;width:92%;max-width:360px;}
+        .toast{pointer-events:auto;padding:.6rem .9rem;border-radius:50px;background:#0c1122;border:1px solid var(--bm);color:#ffffff!important;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 10px 35px rgba(0,0,0,.6);}
+        .toast.s{border-right:4px solid #10b981;background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(14,19,31,.98));}
+        .toast.e{border-right:4px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(14,19,31,.98));}
+        .badge{display:inline-flex;align-items:center;padding:.18rem .5rem;border-radius:50px;font-size:.65rem;font-weight:700;}
+        .bg2{background:var(--gd);color:var(--g);}.br{background:var(--rd);color:#fca5a5;}.by{background:rgba(245,158,11,.15);color:var(--y);}.bgr{background:rgba(255,255,255,.05);color:var(--t2);}.bt{background:var(--td);color:var(--t);}
+        #lv{display:flex;align-items:center;justify-content:center;min-height:100dvh;}
+        #lview{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:1.5rem;}
+        .lcard{width:100%;max-width:380px;padding:2.5rem 2rem;text-align:center;border-radius:26px;background:linear-gradient(158deg,#182036,#0e1424);box-shadow:var(--lit),0 34px 90px -20px rgba(0,0,0,.85),0 0 90px -24px rgba(34,211,238,.45);border:1px solid var(--bs);}
+        
+        /* LAYOUT & SIDEBAR */
+        .sidebar{width:240px;background:linear-gradient(180deg,#0b1020,#070a14);border-left:1px solid var(--bs);display:flex;flex-direction:column;position:fixed;top:0;bottom:0;right:0;z-index:999;transition:transform .25s cubic-bezier(.16,1,.3,1);}
+        .sb-hdr{padding:1.25rem 1rem;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--bs);}
+        .sb-nav{padding:.75rem .5rem;display:flex;flex-direction:column;gap:.25rem;flex:1;overflow-y:auto;}
+        .ni{display:flex;align-items:center;gap:.65rem;padding:.6rem .8rem;border-radius:var(--rm);color:var(--t2);font-size:.8rem;font-weight:700;cursor:pointer;transition:color .15s,background-color .15s,border-color .15s;border-right:3px solid transparent;}
+        .ni:hover{color:var(--tx);background:rgba(255,255,255,.04);}
+        .ni.a{color:var(--tx);background:linear-gradient(270deg,var(--ad),transparent);border-right-color:var(--a);box-shadow:inset 0 0 24px -10px rgba(34,211,238,.5);}
+        .sb-ft{padding:.75rem .5rem;border-top:1px solid var(--bs);display:flex;flex-direction:column;gap:.35rem;}
+        .main{margin-right:240px;padding:1.5rem 1.5rem calc(4rem + var(--sb));max-width:1100px;}
+        .mhdr{display:none;position:fixed;top:0;left:0;right:0;height:50px;z-index:900;background:rgba(7,9,14,.96);border-bottom:1px solid var(--bs);padding:0 .85rem;align-items:center;justify-content:space-between;}
+        .bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:900;background:rgba(7,9,14,.98);border-top:1px solid var(--bs);padding:.35rem .4rem calc(.35rem + var(--sb));justify-content:space-around;align-items:center;}
+        .bni{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.3rem .5rem;border-radius:10px;cursor:pointer;color:var(--t3);transition:color .15s,background-color .15s,border-color .15s;}
+        .bni.a{color:var(--al);font-weight:700;}
+        .bni .bic{font-size:1.1rem;}.bni .blb{font-size:.6rem;}
+        .sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;opacity:0;pointer-events:none;transition:opacity .25s;}
+        .sb-overlay.active{opacity:1;pointer-events:auto;}
+
+        /* STATS & CARDS */
+        .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem;margin-bottom:1.15rem;}
+        .sc{padding:.8rem .95rem;position:relative;}
+        .sl{font-size:.65rem;font-weight:700;color:var(--t3);margin-bottom:.2rem;}
+        .sv{font-size:1.4rem;font-weight:800;}
+        .sd{font-size:.65rem;color:var(--t3);margin-top:.15rem;}
+
+        /* USER LIST */
+        .ucards{display:flex;flex-direction:column;gap:.5rem;}
+        .uc{padding:0;overflow:hidden;border-right:3px solid transparent;}
+        .uc:has(.bg2){border-right-color:var(--g);}.uc:has(.br){border-right-color:var(--r);}.uc:has(.by){border-right-color:var(--y);}
+        .ucb{padding:.65rem .8rem 0;}
+        .uct{display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem;}
+        .ucn{font-size:.85rem;font-weight:700;color:var(--al);}
+        .ucg{display:grid;grid-template-columns:1fr 1fr;gap:.2rem .45rem;margin-bottom:.4rem;}
+        .uf{display:flex;flex-direction:column;gap:.05rem;}
+        .ufl{font-size:.6rem;font-weight:700;color:var(--t3);}
+        .ufv{font-size:.78rem;color:var(--tx);}
+        .uca{display:flex;gap:0;border-top:1px solid var(--bs);}
+        .uact{flex:1;padding:.45rem .15rem;text-align:center;font-size:.65rem;font-weight:700;color:var(--t2);cursor:pointer;border:none;background:transparent;border-left:1px solid var(--bs);display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+        .uact:last-child{border-left:none;}
+        .uact:hover{background:rgba(255,255,255,.04);color:var(--tx);}
+        .uact.dng{color:#fca5a5;}
+        .tw{display:block;}.tw table{width:100%;border-collapse:collapse;}
+        .tw th{padding:.6rem .75rem;font-size:.68rem;font-weight:700;color:var(--t3);border-bottom:1px solid var(--bm);background:rgba(0,0,0,.2);text-align:right;}
+        .tw td{padding:.65rem .75rem;font-size:.8rem;border-bottom:1px solid var(--bs);vertical-align:middle;}
+        .tw tr:hover td{background:rgba(255,255,255,.03);}
+        .tda{display:flex;gap:.25rem;}
+
+        /* MODALS */
+        .mo{position:fixed;inset:0;background:rgba(7,9,14,.85);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:1.25rem 1rem 2rem;opacity:0;pointer-events:none;transition:opacity .2s;overflow-y:auto;}
+        .mo.active{opacity:1;pointer-events:auto;}
+        .mb2{width:100%;max-width:420px;margin:0 auto;background:var(--c2);border:1px solid var(--bm);border-radius:var(--rl);padding:1.1rem 1.15rem;box-shadow:0 15px 45px rgba(0,0,0,.75);transform:translateY(-6px);transition:transform .22s cubic-bezier(.16,1,.3,1);max-height:92dvh;overflow-y:auto;}
+        .mo.active .mb2{transform:translateY(0);}
+        .mhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding-bottom:.35rem;border-bottom:1px solid var(--bs);}
+        .mtl{font-size:1rem;font-weight:800;}
+        .mft{display:flex;gap:.45rem;margin-top:.75rem;padding-top:.35rem;border-top:1px solid var(--bs);}.mft .btn{flex:1;padding:.45rem .75rem;font-size:.78rem;}
+        .sbox{margin-bottom:.85rem;width:100%;}
+        .sbox input{width:100%;max-width:280px;padding:.45rem 1.6rem .45rem .75rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);color:var(--tx);font-size:.8rem;outline:none;}
+        
+        @media(max-width:768px){
+            .sidebar{transform:translateX(100%);box-shadow:-8px 0 25px rgba(0,0,0,.6);}
+            .sidebar.open{transform:translateX(0);}
+            .main{margin-right:0;padding:3.6rem .8rem calc(4.2rem + var(--sb));}
+            .mhdr{display:flex;}.bnav{display:flex;}
+            .tw{display:none;}.ucards{display:flex;}
+            .sgrid{grid-template-columns:1fr 1fr;gap:.45rem;}
+        }
+        @media(min-width:769px){
+            .ucards{display:none;}.tw{display:block;}
+        }
+        body.light-theme{
+            --bg:#eef2f9;--c1:#ffffff;--c2:#f8fafc;--ci:#f1f5f9;--bs:rgba(15,23,42,.10);--bm:rgba(8,145,178,.42);
+            --a:#0891b2;--al:#0e7490;--ad:rgba(8,145,178,.10);--a2:#7c3aed;--grad:linear-gradient(135deg,#0891b2 0%,#6366f1 50%,#7c3aed 100%);--t:#0284c7;--g:#10b981;--r:#dc2626;--y:#d97706;--tx:#0f172a;--t2:#334155;--t3:#64748b;
+        }
+    </style>
+</head>
+<body>
+<div id="tc"></div>
+<div id="sb-overlay" class="sb-overlay" onclick="toggleSidebar()"></div>
+
+<div id="lv">
+    <div style="font-size:2.5rem;animation:pulse 1.2s infinite ease-in-out;" id="lv-logo">🤝</div>
+</div>
+
+<!-- LOGIN VIEW -->
+<div id="lview" class="hidden">
+<div class="gc lcard">
+    <div style="position:absolute;top:12px;left:12px;cursor:pointer;font-size:1rem;" class="theme-btn" onclick="toggleTheme()">🌙</div>
+    <div style="font-size:2.8rem;margin-bottom:.4rem;" id="login-logo">🤝</div>
+    <div style="display:inline-flex;align-items:center;gap:.35rem;margin-bottom:.15rem;">
+        <h1 style="font-size:1.35rem;font-weight:800;" class="gt" id="login-name">بوابة الموزع</h1>
+        <span class="badge bt">Reseller</span>
+    </div>
+    <p style="font-size:.75rem;color:var(--t3);margin-bottom:1.25rem;font-weight:600;">إدارة الحسابات والاشتراكات التابعة</p>
+    <form id="lf">
+        <div class="ig" style="text-align:right;"><label>اسم المستخدم</label><input type="text" id="lu" required autocomplete="username"></div>
+        <div class="ig" style="text-align:right;"><label>كلمة المرور</label><input type="password" id="lp" required autocomplete="current-password"></div>
+        <button type="submit" id="lb" class="btn bp" style="width:100%;margin-top:.65rem;padding:.65rem;">تسجيل الدخول</button>
+    </form>
+</div>
+</div>
+
+<!-- RESELLER PORTAL APP VIEW -->
+<div id="av" class="hidden">
+
+<!-- MOBILE TOP HEADER -->
+<header class="mhdr">
+    <div style="display:flex;align-items:center;gap:.45rem;">
+        <span style="font-size:1.25rem;" id="mh-logo">🦅</span>
+        <span class="gt" style="font-weight:800;font-size:.9rem;" id="mh-name">DAHOOM</span>
+        <span class="badge bt" style="font-size:.55rem;padding:.1rem .35rem;">موزع</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.35rem;">
+        <button class="bi theme-btn" onclick="toggleTheme()" style="width:30px;height:30px;min-width:30px;font-size:.8rem;">🌙</button>
+        <button class="bi" onclick="toggleSidebar()" style="width:30px;height:30px;min-width:30px;font-size:1rem;">☰</button>
+    </div>
+</header>
+
+<!-- SIDEBAR DRAWER (QUICK LINKS) -->
+<aside class="sidebar" id="app-sidebar">
+    <div class="sb-hdr">
+        <div style="font-size:1.5rem;" id="sb-logo">🦅</div>
+        <div>
+            <div class="gt" style="font-weight:800;font-size:.88rem;" id="sb-name">DAHOOM</div>
+            <div style="font-size:.65rem;color:var(--al);font-weight:700;" id="sb-user-display">🤝 موزع</div>
+        </div>
+    </div>
+    <nav class="sb-nav">
+        <div class="ni a" onclick="scrollToSec('rib')">
+            <span>📊</span><span>الرئيسية والرصيد</span>
+        </div>
+        <div class="ni" onclick="scrollToSec('users-sec')">
+            <span>👥</span><span>إدارة المشتركين</span>
+        </div>
+        <div class="ni" onclick="openCU();toggleSidebar()">
+            <span>➕</span><span>حساب جديد</span>
+        </div>
+        <div class="ni" id="sb-trial-link" onclick="openM('mtr');toggleSidebar()">
+            <span>⏱</span><span>حساب تجريبي</span>
+        </div>
+        <div class="ni" id="sb-bulk-link" onclick="openM('mbk');toggleSidebar()">
+            <span>📦</span><span>إنشاء جماعي</span>
+        </div>
+        <div class="ni" onclick="lU(false,true);lD();toggleSidebar()">
+            <span>🔄</span><span>تحديث البيانات</span>
+        </div>
+    </nav>
+    <div class="sb-ft">
+        <button class="btn bs2 bsm theme-btn" onclick="toggleTheme()" style="width:100%;justify-content:center;">🌙 تبديل المظهر</button>
+        <button class="btn bd bsm" onclick="doLogout()" style="width:100%;justify-content:center;">🚪 تسجيل الخروج</button>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+    
+    <!-- DESKTOP TOP BAR -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.15rem;flex-wrap:wrap;gap:.5rem;">
+        <div>
+            <h1 class="gt" style="font-size:1.35rem;font-weight:800;">بوابة الموزع</h1>
+            <p style="font-size:.75rem;color:var(--t2);">إدارة الحسابات والاشتراكات التابعة ومراقبة الحصص</p>
+        </div>
+        <div style="display:flex;gap:.35rem;align-items:center;">
+            <button class="btn bs2 bsm" onclick="lU(false,true)">🔄 تحديث</button>
+            <button class="btn bs2 bsm" id="btn-open-trial" onclick="openM('mtr')">⏱ تجريبي</button>
+            <button class="btn bs2 bsm" id="btn-open-bulk" onclick="openM('mbk')">📦 جماعي</button>
+            <button class="btn bp bsm" onclick="openCU()">+ حساب جديد</button>
+        </div>
+    </div>
+
+    <!-- QUOTA / CREDITS HIGHLIGHT CARD -->
+    <div id="rib" class="gc" style="padding:.85rem 1.1rem;margin-bottom:1.15rem;background:linear-gradient(135deg,rgba(9,11,22,.85),rgba(34,211,238,.1));border-color:var(--bm);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
+            <div id="ri-quota-box" style="flex:1;min-width:200px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
+                    <span style="font-size:.7rem;font-weight:700;color:var(--t2);">👥 حصة الحسابات المستهلكة:</span>
+                    <span class="mono" style="font-size:.85rem;font-weight:800;color:var(--al);" id="ri-q">-- / --</span>
+                </div>
+                <div style="width:100%;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;">
+                    <div id="ri-progress" style="width:0%;height:100%;background:var(--a);transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <div id="ri-credits-box" class="hidden" style="flex:1;min-width:200px;">
+                <span style="font-size:.7rem;font-weight:700;color:var(--t2);">💰 رصيد النقاط المتبقي:</span>
+                <div class="mono" style="font-size:1.2rem;font-weight:800;color:#f0c040;margin-top:.1rem;" id="ri-c">-- نقطة</div>
+                <span style="font-size:.65rem;color:var(--t3);">1 نقطة = تجديد أو إنشاء حساب لمدة 30 يوماً</span>
+            </div>
+
+            <div id="ri-exp-box" style="display:flex;flex-direction:column;align-items:flex-end;">
+                <span style="font-size:.68rem;font-weight:700;color:var(--t3);">📅 صلاحية الموزع</span>
+                <span class="mono" style="font-size:.85rem;font-weight:800;color:var(--tx);margin-top:.1rem;" id="ri-e">--</span>
+                <span id="ri-days-left" class="badge bg2" style="font-size:.6rem;padding:.1rem .4rem;margin-top:.2rem;">نشط</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STAT CHIPS -->
+    <div class="sgrid">
+        <div class="gc sc"><div class="sl">الحسابات التابعة</div><div class="sv gt" id="du">0</div><div class="sd">إجمالي المسجلين لديك</div></div>
+        <div class="gc sc"><div class="sl">المتصلون الآن</div><div class="sv" style="color:var(--g);" id="do">0</div><div class="sd">الجلسات النشطة حالياً</div></div>
+        <div class="gc sc"><div class="sl">حسابات منتهية</div><div class="sv" style="color:var(--r);" id="dexp">0</div><div class="sd">تحتاج إلى تجديد</div></div>
+        <div class="gc sc"><div class="sl">قريبة من النفاد</div><div class="sv" style="color:var(--y);" id="dnq">0</div><div class="sd">≥80% من الحصة</div></div>
+    </div>
+
+    <!-- USERS MANAGEMENT CARD -->
+    <div class="gc" id="users-sec" style="padding:1.15rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem;">
+            <div>
+                <h2 style="font-size:1rem;font-weight:800;">👥 قائمة المشتركين</h2>
+            </div>
+            <div class="sbox" style="margin-bottom:0;max-width:240px;"><input type="text" id="su" placeholder="بحث بالمستخدم..." oninput="fU()"></div>
+        </div>
+
+        <!-- TABLE DESKTOP -->
+        <div class="tw" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>كلمة المرور</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>الجلسات</th>
+                        <th>الباندويث</th>
+                        <th>الحالة</th>
+                        <th style="text-align:left;">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="utb"></tbody>
+            </table>
+        </div>
+
+        <!-- CARDS MOBILE -->
+        <div class="ucards" id="ucc"></div>
+    </div>
+
+</main>
+
+<!-- MOBILE BOTTOM NAVIGATION (4 BUTTONS) -->
+<nav class="bnav">
+    <div class="bni a" onclick="scrollToSec('rib')">
+        <span class="bic">📊</span><span class="blb">الرئيسية</span>
+    </div>
+    <div class="bni" onclick="scrollToSec('users-sec')">
+        <span class="bic">👥</span><span class="blb">المشتركين</span>
+    </div>
+    <div class="bni" onclick="openCU()">
+        <span class="bic">➕</span><span class="blb">إنشاء</span>
+    </div>
+    <div class="bni" onclick="toggleSidebar()">
+        <span class="bic">☰</span><span class="blb">القائمة</span>
+    </div>
+</nav>
+
+</div>
+
+<!-- MODAL: RENEWAL WIZARD -->
+<div class="mo" id="mrn"><div class="mb2">
+    <div class="mhd">
+        <h3 class="mtl">🔄 تجديد الاشتراك</h3>
+        <button class="bi" onclick="closeM('mrn')" style="border:none;">✕</button>
+    </div>
+    <form id="frn">
+        <input type="hidden" id="rn-username">
+        
+        <!-- 1. USER SUMMARY -->
+        <div style="padding:.5rem .75rem;background:var(--ci);border:1px solid var(--bs);border-radius:var(--rm);margin-bottom:.55rem;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <div style="font-size:.62rem;color:var(--t3);font-weight:700;">المستخدم</div>
+                <div class="mono" style="font-size:.95rem;font-weight:800;color:var(--al);" id="rn-user-name">--</div>
+            </div>
+            <div style="text-align:left;">
+                <div style="font-size:.62rem;color:var(--t3);font-weight:700;">الانتهاء الحالي</div>
+                <div class="mono" style="font-size:.75rem;font-weight:700;color:var(--tx);" id="rn-user-current-exp">--</div>
+                <div style="font-size:.62rem;color:var(--t3);margin-top:.1rem;" id="rn-user-current-bw">--</div>
+            </div>
+        </div>
+
+        <!-- 2. DURATION & TIME STACKING -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label>📅 مدة التجديد (الصلاحية)</label>
+            <div style="display:flex;gap:.35rem;margin-bottom:.3rem;">
+                <input type="number" id="rn-duration" value="30" min="1" required style="flex:1;" oninput="updateRenewPreview()">
+                <select id="rn-duration-unit" style="width:85px;" onchange="updateRenewPreview()">
+                    <option value="days">أيام</option>
+                    <option value="hours">ساعات</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:.3rem;">
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(7)">+7 ي</button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(30)">+30 ي</button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(60)">+60 ي</button>
+                <button type="button" class="btn bs2 bsm" style="flex:1;padding:.18rem .3rem;font-size:.68rem;" onclick="setRenewDays(90)">+90 ي</button>
+            </div>
+            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.7rem;color:var(--tx);">
+                <input type="checkbox" id="rn-cumulative" checked style="accent-color:var(--a);width:14px;height:14px;" onchange="updateRenewPreview()">
+                <span>🔄 <b>تراكمي للمدة:</b> تضاف الأيام فوق المتبقي الحالي</span>
+            </label>
+        </div>
+
+        <!-- 3. BANDWIDTH STACKING & QUOTA -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label>📊 خيارات البيانات والباندويث</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem;margin-bottom:.35rem;">
+                <div id="rn-bw-add" onclick="setBwAction('add')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--a);background:var(--ad);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);">
+                    ➕ إضافة تراكمية
+                </div>
+                <div id="rn-bw-reset" onclick="setBwAction('reset')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--bs);background:rgba(255,255,255,.02);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);">
+                    🔄 تصفير الاستهلاك
+                </div>
+                <div id="rn-bw-keep" onclick="setBwAction('keep')" style="cursor:pointer;padding:.4rem .3rem;border:1px solid var(--bs);background:rgba(255,255,255,.02);border-radius:var(--rm);text-align:center;font-size:.7rem;font-weight:700;color:var(--tx);">
+                    ⏳ إبقاء الحالي
+                </div>
+            </div>
+            <!-- ADD BANDWIDTH FIELD -->
+            <div id="rn-add-bw-wrap" style="display:flex;gap:.35rem;align-items:center;">
+                <input type="number" step=".1" id="rn-add-bw" value="0" min="0" placeholder="البيانات المضافة (GB)" style="flex:1;" oninput="updateRenewPreview()">
+                <div style="display:flex;gap:.2rem;">
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(10)">+10G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(30)">+30G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(50)">+50G</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.2rem .4rem;font-size:.68rem;" onclick="setAddBw(100)">+100G</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. DEVICE LIMIT -->
+        <div class="ig" style="margin-bottom:.5rem;">
+            <label>📱 عدد الأجهزة المسموحة</label>
+            <div style="display:flex;gap:.35rem;align-items:center;">
+                <input type="number" id="rn-conn-limit" value="1" min="1" required style="flex:1;">
+                <div style="display:flex;gap:.2rem;">
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=1;updateRenewPreview()">1</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=2;updateRenewPreview()">2</button>
+                    <button type="button" class="btn bs2 bsm" style="padding:.22rem .5rem;font-size:.7rem;" onclick="document.getElementById('rn-conn-limit').value=3;updateRenewPreview()">3</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. PREVIEW -->
+        <div style="padding:.5rem .7rem;background:linear-gradient(135deg,rgba(0,0,0,.35),var(--ad));border:1px solid var(--bm);border-radius:var(--rm);">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem;font-size:.72rem;">
+                <div><span style="color:var(--t3);font-size:.6rem;display:block;">الانتهاء الجديد:</span><b class="mono" style="color:var(--tx);" id="rn-preview-new-exp">--</b></div>
+                <div><span style="color:var(--t3);font-size:.6rem;display:block;">البيانات بعد التجديد:</span><b id="rn-preview-bw-status" style="color:var(--al);">--</b></div>
+            </div>
+            <div id="rn-credit-cost-hint" class="hidden" style="margin-top:.3rem;padding-top:.3rem;border-top:1px dashed var(--bs);font-size:.68rem;color:#f0c040;font-weight:700;"></div>
+        </div>
+
+        <div class="mft">
+            <button type="button" class="btn bs2" onclick="closeM('mrn')">إلغاء</button>
+            <button type="submit" class="btn bp" id="btn-confirm-renew">✅ تأكيد التجديد</button>
+        </div>
+    </form>
+</div></div>
+
+<!-- MODAL: CREATE USER -->
+<div class="mo" id="mcu"><div class="mb2"><div class="mhd"><h3 class="mtl">إنشاء حساب جديد</h3><button class="bi" onclick="closeM('mcu')" style="border:none;">✕</button></div>
+<form id="fcu">
+    <div class="ig"><label>اسم المستخدم</label><input type="text" id="cn" required pattern="[a-zA-Z0-9_]+"></div>
+    <div class="ig"><label>كلمة المرور</label><div style="display:flex;gap:.4rem;"><input type="text" id="cp" required style="flex:1;"><button type="button" class="btn bs2 bsm" onclick="gp('cp')">توليد</button></div></div>
+    <div class="ig"><label>المدة</label><div style="display:flex;gap:.35rem;"><input type="number" id="cd" value="30" min="1" required style="flex:1;"><select id="cdu" style="width:85px;"><option value="days">أيام</option><option value="hours">ساعات</option></select></div></div>
+    <div class="ig">
+        <label>عدد الأجهزة المسموحة</label>
+        <input type="number" id="cc" value="1" min="1" required>
+        <span id="cu-conn-hint" style="font-size:.7rem;color:var(--al);margin-top:.15rem;display:block;"></span>
+    </div>
+    <div class="ir">
+        <div class="ig"><label>إجمالي الباندويث (GB, 0=∞)</label><input type="number" step=".1" id="cb" value="0" min="0"></div>
+        <div class="ig"><label>الباندويث اليومي (GB, 0=∞)</label><input type="number" step=".1" id="cdb" value="0" min="0"></div>
+    </div>
+    <div id="cq" class="hidden" style="padding:.45rem .75rem;background:var(--ad);border:1px solid var(--bm);border-radius:var(--rm);margin-bottom:.65rem;font-size:.75rem;color:var(--al);"></div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mcu')">إلغاء</button><button type="submit" class="btn bp">إنشاء الحساب</button></div>
+</form></div></div>
+
+<!-- MODAL: TRIAL USER -->
+<div class="mo" id="mtr"><div class="mb2"><div class="mhd"><h3 class="mtl">حساب تجريبي</h3><button class="bi" onclick="closeM('mtr')" style="border:none;">✕</button></div>
+<form id="ftr">
+    <div class="ig"><label>اسم المستخدم (اختياري)</label><input type="text" id="tn" placeholder="توليد تلقائي"></div>
+    <div class="ig"><label>كلمة المرور</label><div style="display:flex;gap:.4rem;"><input type="text" id="tp2" style="flex:1;" placeholder="توليد تلقائي"><button type="button" class="btn bs2 bsm" onclick="gp('tp2')">توليد</button></div></div>
+    <div class="ig"><label>المدة الزمنية</label><select id="th"><option value="1">1 ساعة</option><option value="2">2 ساعتان</option><option value="3">3 ساعات</option><option value="6">6 ساعات</option><option value="12">12 ساعة</option><option value="24">1 يوم (24 ساعة)</option><option value="72">3 أيام</option></select></div>
+    <div class="ir"><div class="ig"><label>عدد الأجهزة</label><input type="number" id="tc2" value="1" min="1" required></div><div class="ig"><label>الباندويث (GB, 0=∞)</label><input type="number" step=".1" id="tb" value="0" min="0"></div></div>
+    <div id="tq" class="hidden" style="padding:.45rem .75rem;background:var(--ad);border:1px solid var(--bm);border-radius:var(--rm);margin-bottom:.65rem;font-size:.75rem;color:var(--al);"></div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mtr')">إلغاء</button><button type="submit" class="btn bp">إنشاء التجريبي</button></div>
+</form></div></div>
+
+<!-- MODAL: BULK USERS -->
+<div class="mo" id="mbk"><div class="mb2"><div class="mhd"><h3 class="mtl">📦 إنشاء جماعي للحسابات</h3><button class="bi" onclick="closeM('mbk')" style="border:none;">✕</button></div>
+<form id="fb">
+    <div id="fb-fields">
+        <div class="ir"><div class="ig"><label>البادئة (Prefix)</label><input type="text" id="bp2" value="user" required></div><div class="ig"><label>العدد المطلوب</label><input type="number" id="bc" value="5" min="1" max="50" required></div></div>
+        <div class="ir">
+            <div class="ig"><label>المدة لكل حساب</label><div style="display:flex;gap:.35rem;"><input type="number" id="bd" value="30" min="1" required style="flex:1;"><select id="bdu" style="width:85px;"><option value="days">أيام</option><option value="hours">ساعات</option></select></div></div>
+            <div class="ig"><label>عدد الأجهزة</label><input type="number" id="bcc" value="1" min="1" required></div>
+        </div>
+        <div class="mft"><button type="button" class="btn bs2" onclick="closeM('mbk')">إلغاء</button><button type="submit" class="btn bp" id="btn-submit-bulk">🚀 البدء بالإنشاء</button></div>
+    </div>
+    <div id="fb-progress-wrap" class="hidden" style="margin-top:.75rem;padding:1rem;background:rgba(0,0,0,.25);border:1px solid var(--bs);border-radius:var(--rm);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem;">
+            <span style="font-weight:700;font-size:.82rem;">جاري الإنشاء...</span>
+            <span class="mono" style="font-weight:800;color:var(--al);" id="bulk-pct">0%</span>
+        </div>
+        <div style="width:100%;height:10px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden;margin-bottom:.5rem;">
+            <div id="bulk-progress-fill" style="width:0%;height:100%;background:var(--a);transition:width .2s;"></div>
+        </div>
+        <div id="bulk-result-actions" class="hidden" style="margin-top:.75rem;display:flex;gap:.5rem;">
+            <button type="button" class="btn bp bsm" style="flex:1;" id="btn-copy-bulk-list">📋 نسخ الحسابات</button>
+            <button type="button" class="btn bs2 bsm" onclick="closeM('mbk')">إغلاق</button>
+        </div>
+    </div>
+</form></div></div>
+
+<!-- MODAL: EDIT USER -->
+<div class="mo" id="meu"><div class="mb2"><div class="mhd"><h3 class="mtl">تعديل بيانات الحساب</h3><button class="bi" onclick="closeM('meu')" style="border:none;">✕</button></div>
+<form id="feu"><input type="hidden" id="euh">
+    <div class="ig"><label>اسم المستخدم</label><input type="text" id="eun" disabled style="opacity:.4;"></div>
+    <div class="ig"><label>كلمة المرور الجديدة</label><div style="display:flex;gap:.4rem;"><input type="text" id="eup" style="flex:1;" placeholder="دون تغيير"><button type="button" class="btn bs2 bsm" onclick="gp('eup')">توليد</button></div></div>
+    <div class="ig"><label>تعديل الصلاحية (المدة)</label><div style="display:flex;gap:.35rem;"><input type="number" id="eud" min="1" placeholder="إبقاء الحالية" style="flex:1;"><select id="eudu" style="width:85px;"><option value="days">أيام</option><option value="hours">ساعات</option></select></div></div>
+    <div class="ig"><label>عدد الأجهزة المسموحة</label><input type="number" id="euc" min="1" required></div>
+    <div class="ir">
+        <div class="ig"><label>إجمالي الباندويث (GB, 0=∞)</label><input type="number" step=".1" id="eub" min="0"></div>
+        <div class="ig"><label>الباندويث اليومي (GB, 0=∞)</label><input type="number" step=".1" id="eudb" min="0"></div>
+    </div>
+    <div class="mft"><button type="button" class="btn bs2" onclick="closeM('meu')">إلغاء</button><button type="submit" class="btn bp">حفظ التعديلات</button></div>
+</form></div></div>
+
+<script>
+function toggleTheme(){
+    const b=document.body;b.classList.toggle('light-theme');
+    const isL=b.classList.contains('light-theme');
+    localStorage.setItem('theme',isL?'light':'dark');
+    document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent=isL?'☀️':'🌙');
+}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light-theme');document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent='☀️');}
+
+function toggleSidebar(){
+    const sb=document.getElementById('app-sidebar');
+    const ov=document.getElementById('sb-overlay');
+    sb.classList.toggle('open');
+    ov.classList.toggle('active');
+}
+
+function scrollToSec(id){
+    const el=document.getElementById(id);
+    if(el){
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    const sb=document.getElementById('app-sidebar');
+    const ov=document.getElementById('sb-overlay');
+    if(sb.classList.contains('open')){
+        sb.classList.remove('open');
+        ov.classList.remove('active');
+    }
+}
+
+let U=[],ME='',MY_TYPE='quota',MY_CREDITS=0,MY_MAX_CONN=0,MY_MAX_BW=0,MY_ALLOW_BULK=true,MY_ALLOW_TRIALS=true,_hU='';
+const E=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fB=b=>{if(!b)return'0 MB';const g=b/1073741824;return g>=1?g.toFixed(1)+'G':(b/1048576).toFixed(0)+' MB';};
+
+function T(m,t='i'){
+    const c=document.getElementById('tc');const el=document.createElement('div');
+    el.className=`toast ${t}`;el.innerHTML=`<span class="t-msg">${E(m)}</span>`;
+    c.appendChild(el);setTimeout(()=>{el.style.opacity='0';setTimeout(()=>el.remove(),300);},3500);
+}
+
+function copyText(text, successMsg='تم النسخ بنجاح'){
+    if(!text) return;
+    if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(()=>{
+            T(successMsg, 's');
+        }).catch(()=>{
+            _fallbackCopyText(text, successMsg);
+        });
+    }else{
+        _fallbackCopyText(text, successMsg);
+    }
+}
+function _fallbackCopyText(text, successMsg){
+    try{
+        const ta=document.createElement('textarea');
+        ta.value=text;ta.setAttribute('readonly','');
+        ta.style.position='fixed';ta.style.top='0';ta.style.left='0';ta.style.width='2em';ta.style.height='2em';ta.style.padding='0';ta.style.border='none';ta.style.outline='none';ta.style.boxShadow='none';ta.style.background='transparent';
+        document.body.appendChild(ta);ta.focus();ta.select();
+        const ok=document.execCommand('copy');document.body.removeChild(ta);
+        if(ok) T(successMsg, 's');
+        else T('تعذر النسخ، يرجى النسخ يدوياً', 'e');
+    }catch(e){T('تعذر النسخ التلقائي', 'e');}
+}
+
+async function api(m,p,b=null){
+    const o={method:m,credentials:'same-origin',headers:{'X-Portal':'reseller'}};
+    const tk=localStorage.getItem('ff_reseller_token');
+    if(tk){o.headers['Authorization']='Bearer '+tk;o.headers['X-Session-Token']=tk;}
+    if(b){o.headers['Content-Type']='application/json';o.body=JSON.stringify(b);}
+    const r=await fetch(p,o);
+    if(r.status===401&&p!=='/api/login'){localStorage.removeItem('ff_reseller_token');sL();throw new Error('انتهت الجلسة');}
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error||'فشل الطلب');
+    return d;
+}
+
+function openM(id){document.getElementById(id).classList.add('active');}
+function closeM(id){document.getElementById(id).classList.remove('active');}
+function gp(id){const c='abcdefghjkmnpqrstuvwxyz23456789';let p='';for(let i=0;i<8;i++)p+=c.charAt(Math.floor(Math.random()*c.length));document.getElementById(id).value=p;}
+
+function renderResellerInfo(ri, userCount){
+    if(!ri) return;
+    MY_TYPE = ri.type || 'quota';
+    MY_CREDITS = ri.credits || 0;
+    if(ri.max_conn_per_user) MY_MAX_CONN = ri.max_conn_per_user;
+    if(ri.allow_bulk !== undefined) MY_ALLOW_BULK = ri.allow_bulk;
+    if(ri.allow_trials !== undefined) MY_ALLOW_TRIALS = ri.allow_trials;
+
+    if(MY_TYPE === 'credits'){
+        document.getElementById('ri-quota-box').classList.add('hidden');
+        document.getElementById('ri-credits-box').classList.remove('hidden');
+        document.getElementById('ri-c').textContent = `${MY_CREDITS} نقطة`;
+        document.getElementById('ri-exp-box').style.display = 'none';
+    }else{
+        document.getElementById('ri-quota-box').classList.remove('hidden');
+        document.getElementById('ri-credits-box').classList.add('hidden');
+        const cr = (ri.created_users !== undefined) ? ri.created_users : (userCount || 0);
+        const mx = ri.max_users || 1;
+        document.getElementById('ri-q').textContent = `${cr} / ${mx} مستخدم`;
+        const pct = Math.min(100, Math.round((cr / mx) * 100));
+        document.getElementById('ri-progress').style.width = `${pct}%`;
+        
+        document.getElementById('ri-exp-box').style.display = 'flex';
+        const expStr = ri.expire_date || '--';
+        document.getElementById('ri-e').textContent = expStr;
+        
+        const tag = document.getElementById('ri-days-left');
+        if(tag){
+            if(expStr && expStr !== 'N/A' && expStr !== '--' && !expStr.includes('غير محدود') && !expStr.includes('Unlimited')){
+                const target = new Date(expStr.replace(' ', 'T'));
+                const now = new Date();
+                const diffDays = Math.ceil((target - now) / 86400000);
+                if(diffDays <= 0){
+                    tag.className = 'badge br'; tag.textContent = 'منتهي';
+                }else if(diffDays <= 3){
+                    tag.className = 'badge by'; tag.textContent = `متبقي ${diffDays} يوم`;
+                }else{
+                    tag.className = 'badge bg2'; tag.textContent = `متبقي ${diffDays} يوم`;
+                }
+            }else{
+                tag.className = 'badge bg2'; tag.textContent = 'نشط';
+            }
+        }
+    }
+}
+
+async function init(){
+    try{
+        const br=await api('GET','/api/branding');
+        if(br){
+            document.getElementById('login-name').textContent=br.panel_name||'بوابة الموزع';
+            document.getElementById('mh-name').textContent=br.panel_name||'DAHOOM';
+            document.getElementById('sb-name').textContent=br.panel_name||'DAHOOM';
+        }
+    }catch(e){}
+    try{
+        const m=await api('GET','/api/me');
+        if(m.role!=='reseller'&&m.role!=='admin'){sL();return;}
+        ME=m.username;
+        MY_TYPE=m.reseller_type||m.type||'quota';
+        MY_CREDITS=m.credits||0;
+        MY_MAX_CONN=m.max_conn_per_user||0;
+        MY_MAX_BW=m.max_bw_per_user||0;
+        MY_ALLOW_BULK=m.allow_bulk!==false;
+        MY_ALLOW_TRIALS=m.allow_trials!==false;
+        document.getElementById('sb-user-display').textContent=`🤝 ${ME}`;
+        if(m.reseller_info) renderResellerInfo(m.reseller_info, m.created_users);
+        else renderResellerInfo(m, m.created_users);
+        document.getElementById('lv').classList.add('hidden');
+        sA();
+    }catch(e){
+        document.getElementById('lv').classList.add('hidden');
+        sL();
+    }
+}
+document.addEventListener('DOMContentLoaded',init);
+
+function sL(){document.getElementById('av').classList.add('hidden');document.getElementById('lview').classList.remove('hidden');}
+function sA(){
+    document.getElementById('lview').classList.add('hidden');
+    document.getElementById('av').classList.remove('hidden');
+    if(!MY_ALLOW_BULK){
+        const b=document.getElementById('btn-open-bulk');if(b)b.classList.add('hidden');
+        const sbb=document.getElementById('sb-bulk-link');if(sbb)sbb.classList.add('hidden');
+    }
+    if(!MY_ALLOW_TRIALS){
+        const t=document.getElementById('btn-open-trial');if(t)t.classList.add('hidden');
+        const sbt=document.getElementById('sb-trial-link');if(sbt)sbt.classList.add('hidden');
+    }
+    lD();lU();
+}
+
+async function doLogout(){try{await api('POST','/api/logout',{portal:'reseller'});}catch(e){}localStorage.removeItem('ff_reseller_token');sL();}
+
+document.getElementById('lf').addEventListener('submit',async e=>{
+    e.preventDefault();const b=document.getElementById('lb');b.disabled=true;b.textContent='جاري التحقق...';
+    try{
+        const u = document.getElementById('lu').value.trim();
+        const p = document.getElementById('lp').value.trim();
+        const res = await api('POST','/api/login',{username:u,password:p,portal:'reseller'});
+        if(res && res.token) localStorage.setItem('ff_reseller_token', res.token);
+        const m=await api('GET','/api/me');
+        ME=m.username;
+        MY_TYPE=m.reseller_type||m.type||'quota';
+        MY_CREDITS=m.credits||0;
+        MY_MAX_CONN=m.max_conn_per_user||0;
+        MY_MAX_BW=m.max_bw_per_user||0;
+        MY_ALLOW_BULK=m.allow_bulk!==false;
+        MY_ALLOW_TRIALS=m.allow_trials!==false;
+        document.getElementById('sb-user-display').textContent=`🤝 ${ME}`;
+        if(m.reseller_info) renderResellerInfo(m.reseller_info, m.created_users);
+        else renderResellerInfo(m, m.created_users);
+        T('تم تسجيل الدخول بنجاح','s');
+        sA();
+    }catch(e){T(e.message,'e');}finally{b.disabled=false;b.textContent='تسجيل الدخول';}
+});
+
+async function lD(){
+    try{
+        const d=await api('GET','/api/dashboard');
+        document.getElementById('du').textContent=d.user_count||0;
+        document.getElementById('do').textContent=d.online_sessions||0;
+        document.getElementById('dexp').textContent=d.expired_accounts||0;
+        document.getElementById('dnq').textContent=d.near_quota||0;
+        
+        if(d.reseller_info) renderResellerInfo(d.reseller_info, d.user_count);
+    }catch(e){}
+}
+
+async function lU(s=false,forceFresh=false){
+    try{
+        const d=await api('GET','/api/users');
+        const h=JSON.stringify(d);
+        if(s&&!forceFresh&&h===_hU)return;
+        _hU=h;U=d.users||[];
+        const si=document.getElementById('su');
+        if(document.activeElement!==si||!si.value)fU();
+        if(!s&&forceFresh)T('تم تحديث قائمة الحسابات','s');
+    }catch(e){if(!s)T('فشل تحميل الحسابات','e');}
+}
+
+function fU(){const q=document.getElementById('su').value.toLowerCase();rU(U.filter(u=>u.username.toLowerCase().includes(q)));}
+
+function rU(list){
+    const tb=document.getElementById('utb'),cards=document.getElementById('ucc');
+    tb.innerHTML='';cards.innerHTML='';
+    if(!list.length){
+        tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:1.5rem;">لا توجد حسابات مسجلة</td></tr>';
+        cards.innerHTML='<div class="gc" style="text-align:center;color:var(--t3);padding:1.5rem;">لا توجد حسابات مسجلة</div>';
+        return;
+    }
+    list.forEach(u=>{
+        const bg=u.is_expired?'<span class="badge br">منتهي</span>':u.is_locked?'<span class="badge by">موقوف</span>':'<span class="badge bg2">نشط</span>';
+        const bw=u.bandwidth_gb>0?`${fB(u.total_used_bytes)}/${u.bandwidth_gb}G`:`${fB(u.total_used_bytes)}/∞`;
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+        <td class="mono" style="font-weight:700;color:var(--al);">${E(u.username)}</td>
+        <td><span class="mono" style="color:var(--t2);font-size:.78rem;" id="p-${u.username}">••••••</span> <span style="cursor:pointer;font-size:.75rem;" onclick="tp('p-${u.username}','${E(u.password)}')">👁</span></td>
+        <td><span class="mono" style="font-size:.78rem;">${u.expire_date}</span></td>
+        <td><span style="color:${u.online_sessions?'var(--g)':'inherit'};font-weight:700;">${u.online_sessions}</span>/${u.conn_limit}</td>
+        <td class="mono" style="font-size:.78rem;">${bw}</td>
+        <td>${bg}</td>
+        <td><div class="tda">
+            <button class="bi" title="نسخ" onclick="cA('${E(u.username)}','${E(u.password)}','${u.expire_date}',${u.bandwidth_gb},${u.conn_limit})">📋</button>
+            <button class="bi" title="تعديل" onclick="eU('${E(u.username)}',${u.conn_limit},${u.bandwidth_gb})">✏️</button>
+            <button class="bi" title="تجديد" onclick="rnU('${E(u.username)}')">🔄</button>
+            ${u.is_locked?`<button class="bi" title="إلغاء القفل" onclick="lkU('${E(u.username)}',0)">🔓</button>`:`<button class="bi" title="قفل" onclick="lkU('${E(u.username)}',1)">🔒</button>`}
+            <button class="bi" title="حذف" style="color:var(--r);" onclick="dU('${E(u.username)}')">🗑</button>
+        </div></td>`;
+        tb.appendChild(tr);
+
+        const c=document.createElement('div');c.className='gc uc';
+        c.innerHTML=`
+        <div class="ucb">
+            <div class="uct"><span class="ucn">${E(u.username)}</span>${bg}</div>
+            <div class="ucg">
+                <div class="uf"><span class="ufl">كلمة المرور</span><span class="ufv"><span class="mono" id="mp-${u.username}">••••••</span> <span style="cursor:pointer;" onclick="tp('mp-${u.username}','${E(u.password)}')">👁</span></span></div>
+                <div class="uf"><span class="ufl">الانتهاء</span><span class="ufv mono">${u.expire_date}</span></div>
+                <div class="uf"><span class="ufl">الجلسات</span><span class="ufv"><b>${u.online_sessions}</b> / ${u.conn_limit}</span></div>
+                <div class="uf"><span class="ufl">الباندويث</span><span class="ufv mono">${bw}</span></div>
+            </div>
+        </div>
+        <div class="uca">
+            <button class="uact" onclick="cA('${E(u.username)}','${E(u.password)}','${u.expire_date}',${u.bandwidth_gb},${u.conn_limit})"><span>📋</span>نسخ</button>
+            <button class="uact" onclick="eU('${E(u.username)}',${u.conn_limit},${u.bandwidth_gb})"><span>✏️</span>تعديل</button>
+            <button class="uact" onclick="rnU('${E(u.username)}')"><span>🔄</span>تجديد</button>
+            <button class="uact dng" onclick="dU('${E(u.username)}')"><span>🗑</span>حذف</button>
+        </div>`;
+        cards.appendChild(c);
+    });
+}
+
+function tp(id,p){const e=document.getElementById(id);if(e)e.textContent=e.textContent==='••••••'?p:'••••••';}
+
+function openCU(){
+    gp('cp');
+    const cc=document.getElementById('cc');
+    if(MY_MAX_CONN>0){cc.max=MY_MAX_CONN;cc.value=1;document.getElementById('cu-conn-hint').textContent=`الحد الأقصى للأجهزة: ${MY_MAX_CONN}`;}
+    else{cc.removeAttribute('max');document.getElementById('cu-conn-hint').textContent='';}
+    if(MY_TYPE==='credits'){document.getElementById('cq').innerHTML=`💰 متبقي لديك <b>${MY_CREDITS}</b> نقطة (1 نقطة = 30 يوم)`;document.getElementById('cq').classList.remove('hidden');}
+    else{document.getElementById('cq').classList.add('hidden');}
+    openM('mcu');
+}
+
+document.getElementById('fcu').addEventListener('submit',async e=>{
+    e.preventDefault();
+    try{
+        await api('POST','/api/users',{
+            username:document.getElementById('cn').value,
+            password:document.getElementById('cp').value,
+            duration:document.getElementById('cd').value,
+            duration_unit:document.getElementById('cdu').value,
+            conn_limit:+document.getElementById('cc').value,
+            bandwidth_gb:+document.getElementById('cb').value,
+            daily_bandwidth_gb:+document.getElementById('cdb').value
+        });
+        T('تم إنشاء الحساب بنجاح','s');closeM('mcu');document.getElementById('fcu').reset();lU();lD();
+    }catch(e){T(e.message,'e');}
+});
+
+function eU(u,c,b){
+    document.getElementById('euh').value=u;document.getElementById('eun').value=u;document.getElementById('euc').value=c||1;document.getElementById('eub').value=b||0;
+    openM('meu');
+}
+
+document.getElementById('feu').addEventListener('submit',async e=>{
+    e.preventDefault();const u=document.getElementById('euh').value;
+    const body={conn_limit:+document.getElementById('euc').value,bandwidth_gb:+document.getElementById('eub').value,daily_bandwidth_gb:+document.getElementById('eudb').value};
+    const p=document.getElementById('eup').value;if(p)body.password=p;
+    const d=document.getElementById('eud').value;if(d){body.duration=d;body.duration_unit=document.getElementById('eudu').value;}
+    try{await api('PUT',`/api/users/${u}`,body);T('تم حفظ التعديلات','s');closeM('meu');lU();}catch(e){T(e.message,'e');}
+});
+
+let _currentRenewUser=null;
+let _currentBwAction='add';
+
+function rnU(u){
+    _currentRenewUser = U.find(x => x.username === u) || { username: u, expire_date: '--', bandwidth_gb: 0, total_used_bytes: 0, conn_limit: 1 };
+    _currentBwAction = 'add';
+    document.getElementById('rn-username').value = _currentRenewUser.username;
+    document.getElementById('rn-user-name').textContent = _currentRenewUser.username;
+    document.getElementById('rn-user-current-exp').textContent = _currentRenewUser.expire_date || '--';
+    
+    const bwTxt = _currentRenewUser.bandwidth_gb > 0 ? `${fB(_currentRenewUser.total_used_bytes)} / ${_currentRenewUser.bandwidth_gb} GB` : 'غير محدود (∞)';
+    const curBwEl = document.getElementById('rn-user-current-bw');
+    if(curBwEl) curBwEl.textContent = `البيانات: ${bwTxt}`;
+
+    document.getElementById('rn-duration').value = '30';
+    document.getElementById('rn-duration-unit').value = 'days';
+    document.getElementById('rn-add-bw').value = _currentRenewUser.bandwidth_gb > 0 ? _currentRenewUser.bandwidth_gb : '0';
+    
+    const connEl = document.getElementById('rn-conn-limit');
+    if(connEl){
+        connEl.value = _currentRenewUser.conn_limit || 1;
+        if(MY_MAX_CONN > 0) connEl.max = MY_MAX_CONN;
+        else connEl.removeAttribute('max');
+    }
+    const cumEl = document.getElementById('rn-cumulative');
+    if(cumEl) cumEl.checked = true;
+    
+    setBwAction('add');
+    openM('mrn');
+}
+
+function setBwAction(act){
+    _currentBwAction = act;
+    const btnAdd = document.getElementById('rn-bw-add');
+    const btnReset = document.getElementById('rn-bw-reset');
+    const btnKeep = document.getElementById('rn-bw-keep');
+    const wrapAdd = document.getElementById('rn-add-bw-wrap');
+    
+    [btnAdd, btnReset, btnKeep].forEach(b => {
+        if(b){ b.style.borderColor = 'var(--bs)'; b.style.background = 'rgba(255,255,255,.02)'; b.style.color = 'var(--tx)'; }
+    });
+    
+    if(act === 'add'){
+        if(btnAdd){ btnAdd.style.borderColor = 'var(--a)'; btnAdd.style.background = 'var(--ad)'; }
+        if(wrapAdd) wrapAdd.style.display = 'flex';
+    }else if(act === 'reset'){
+        if(btnReset){ btnReset.style.borderColor = 'var(--g)'; btnReset.style.background = 'rgba(16,185,129,.12)'; }
+        if(wrapAdd) wrapAdd.style.display = 'none';
+    }else{
+        if(btnKeep){ btnKeep.style.borderColor = 'var(--y)'; btnKeep.style.background = 'rgba(245,158,11,.12)'; }
+        if(wrapAdd) wrapAdd.style.display = 'none';
+    }
+    updateRenewPreview();
+}
+
+function setAddBw(gb){
+    document.getElementById('rn-add-bw').value = gb;
+    updateRenewPreview();
+}
+
+function setRenewDays(days){
+    document.getElementById('rn-duration').value = days;
+    document.getElementById('rn-duration-unit').value = 'days';
+    updateRenewPreview();
+}
+
+function updateRenewPreview(){
+    if(!_currentRenewUser) return;
+    const val = parseInt(document.getElementById('rn-duration').value) || 1;
+    const unit = document.getElementById('rn-duration-unit').value;
+    const isCum = document.getElementById('rn-cumulative') ? document.getElementById('rn-cumulative').checked : true;
+
+    let base = new Date();
+    if(isCum && _currentRenewUser.expire_date && _currentRenewUser.expire_date !== '--'){
+        const p = new Date(_currentRenewUser.expire_date.replace(' ', 'T'));
+        if(!isNaN(p.getTime()) && p > base) base = p;
+    }
+    let target = new Date(base.getTime());
+    if(unit === 'hours') target.setHours(target.getHours() + val);
+    else target.setDate(target.getDate() + val);
+    const yr = target.getFullYear();
+    const mo = String(target.getMonth() + 1).padStart(2, '0');
+    const da = String(target.getDate()).padStart(2, '0');
+    const hr = String(target.getHours()).padStart(2, '0');
+    const mi = String(target.getMinutes()).padStart(2, '0');
+    let formatted = `${yr}-${mo}-${da}`;
+    if(unit === 'hours' || (target.getHours() !== 0 || target.getMinutes() !== 0)){
+        formatted += ` ${hr}:${mi}`;
+    }
+    const expEl = document.getElementById('rn-preview-new-exp');
+    if(expEl) expEl.textContent = formatted;
+
+    const bwStatusEl = document.getElementById('rn-preview-bw-status');
+    if(bwStatusEl){
+        const curLimit = parseFloat(_currentRenewUser.bandwidth_gb || 0);
+        if(_currentBwAction === 'add'){
+            const added = parseFloat(document.getElementById('rn-add-bw').value) || 0;
+            if(added > 0){
+                const total = curLimit > 0 ? (curLimit + added) : added;
+                bwStatusEl.textContent = `+${added} GB (الإجمالي: ${total} GB)`;
+                bwStatusEl.style.color = 'var(--al)';
+            }else{
+                bwStatusEl.textContent = curLimit > 0 ? `${curLimit} GB (إبقاء الحالي)` : 'غير محدود (∞)';
+                bwStatusEl.style.color = 'var(--t2)';
+            }
+        }else if(_currentBwAction === 'reset'){
+            bwStatusEl.textContent = 'تصفير الاستهلاك كدورة جديدة (0 GB)';
+            bwStatusEl.style.color = 'var(--g)';
+        }else{
+            bwStatusEl.textContent = curLimit > 0 ? `${curLimit} GB (مستمر)` : 'غير محدود (∞)';
+            bwStatusEl.style.color = 'var(--t2)';
+        }
+    }
+
+    const hintEl = document.getElementById('rn-credit-cost-hint');
+    if(hintEl && MY_TYPE === 'credits'){
+        const cost = unit === 'hours' ? Math.max(1, Math.ceil(val / 720)) : Math.max(1, Math.ceil(val / 30));
+        hintEl.textContent = `💰 سيتم خصم ${cost} نقطة من رصيدك (${MY_CREDITS} نقطة)`;
+        hintEl.classList.remove('hidden');
+    }else if(hintEl){
+        hintEl.classList.add('hidden');
+    }
+}
+
+document.getElementById('frn').addEventListener('submit', async e => {
+    e.preventDefault();
+    const u = document.getElementById('rn-username').value;
+    const val = parseInt(document.getElementById('rn-duration').value) || 30;
+    const unit = document.getElementById('rn-duration-unit').value;
+    const connLimit = parseInt(document.getElementById('rn-conn-limit').value) || 1;
+    const isCum = document.getElementById('rn-cumulative') ? document.getElementById('rn-cumulative').checked : true;
+    
+    let resetBw = false;
+    let addBw = 0;
+    if(_currentBwAction === 'reset'){
+        resetBw = true;
+    }else if(_currentBwAction === 'add'){
+        addBw = parseFloat(document.getElementById('rn-add-bw').value) || 0;
+    }
+
+    const btn = document.getElementById('btn-confirm-renew');
+    btn.disabled = true;
+    btn.textContent = 'جاري التجديد...';
+    try {
+        const body = {
+            duration_value: val,
+            duration_unit: unit,
+            bw_action: _currentBwAction,
+            reset_bandwidth: resetBw,
+            add_bandwidth_gb: addBw,
+            conn_limit: connLimit,
+            cumulative: isCum
+        };
+        const res = await api('POST', `/api/users/${u}/renew`, body);
+        T(`تم تجديد اشتراك ${u} بنجاح (${connLimit} أجهزة)`, 's');
+        closeM('mrn');
+        lU();
+        lD();
+    } catch(err) {
+        T(err.message || 'فشل تجديد الحساب', 'e');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✅ تأكيد التجديد';
+    }
+});
+
+async function lkU(u,lk){
+    try{await api('POST',`/api/users/${u}/lock`,{locked:lk===1});T(lk===1?'تم قفل الحساب':'تم إلغاء القفل','s');lU();lD();}catch(e){T(e.message,'e');}
+}
+
+async function dU(u){
+    if(!confirm(`هل أنت متأكد من حذف الحساب ${u} نهائياً؟`))return;
+    try{await api('DELETE',`/api/users/${u}`);T('تم حذف الحساب بنجاح','s');lU();lD();}catch(e){T(e.message,'e');}
+}
+
+function cA(u,p,e,b,c){
+    const txt=`👤 اسم المستخدم: ${u}\n🔑 كلمة المرور: ${p}\n📅 تاريخ الانتهاء: ${e}\n📱 الأجهزة: ${c}\n📊 الباندويث: ${b>0?b+' GB':'غير محدود'}`;
+    copyText(txt, 'تم نسخ بيانات الحساب بنجاح');
+}
+
+// Auto-poll reseller accounts every 8 seconds
+setInterval(()=>{if(!document.getElementById('av').classList.contains('hidden'))lU(true);},8000);
+</script>
+</body>
+</html>
