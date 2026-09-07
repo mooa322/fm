@@ -1,7 +1,1 @@
-*.swp
-*.swo
-*.tmp
-.DS_Store
-Thumbs.db
-.gitignore
-install.sh
+Nothing needs to be added to .gitignore since the only modified file is `install.sh`, which is a shell script and should be tracked in version control.
