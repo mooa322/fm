@@ -22,8 +22,8 @@ INSTALL_FLAG="$FF_DIR/.install"
 VERSION_FILE="$FF_DIR/.version"
 
 # Branch Configuration (Dynamic)
-BRANCH="dev"
-VER_PREFIX="4.6_dev"
+BRANCH="main"
+VER_PREFIX="4.7"
 
 # Read existing channel if present
 if [ -f "$FF_DIR/channel" ]; then
@@ -53,7 +53,7 @@ elif [[ "$BRANCH" == "beta2" ]]; then
     VER_PREFIX="4.6_beta"
 else
     BRANCH="main"
-    VER_PREFIX="4.6_stable"
+    VER_PREFIX="4.7"
 fi
 
 # URLs (GitHub is the authoritative source). The repo path itself is
@@ -326,7 +326,7 @@ install_tool() {
             VER_PREFIX="4.6_beta"
         else
             BRANCH="main"
-            VER_PREFIX="4.6_stable"
+            VER_PREFIX="4.7"
         fi
     elif [ "$silent_install" = "false" ]; then
         echo -e "  ${C_CYAN}┌────────────────────────────────────────────────────────┐${C_RESET}"
@@ -341,7 +341,7 @@ install_tool() {
         ch_choice=${ch_choice:-1}
         if [[ "$ch_choice" == "1" ]]; then
             BRANCH="main"
-            VER_PREFIX="4.6_stable"
+            VER_PREFIX="4.7"
             echo -e "\n  ${C_GREEN}✅ Stable channel selected.${C_RESET}\n"
         elif [[ "$ch_choice" == "2" ]]; then
             BRANCH="beta2"
