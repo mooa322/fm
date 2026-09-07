@@ -23,7 +23,7 @@ VERSION_FILE="$FF_DIR/.version"
 
 # Branch Configuration (Dynamic)
 BRANCH="main"
-VER_PREFIX="9_stable"
+VER_PREFIX="4.9_stable"
 
 # Read existing channel if present
 if [ -f "$FF_DIR/channel" ]; then
@@ -48,12 +48,12 @@ for arg in "$@"; do
 done
 
 if [[ "$BRANCH" == "dev" ]]; then
-    VER_PREFIX="4.6_dev"
+    VER_PREFIX="4.9_dev"
 elif [[ "$BRANCH" == "beta2" ]]; then
-    VER_PREFIX="4.6_beta"
+    VER_PREFIX="4.9_beta"
 else
     BRANCH="main"
-    VER_PREFIX="9_stable"
+    VER_PREFIX="4.9_stable"
 fi
 
 # URLs (GitHub is the authoritative source). The repo path itself is
@@ -321,12 +321,12 @@ install_tool() {
     if [ -f "/etc/firewallfalcon/channel" ]; then
         BRANCH=$(cat "/etc/firewallfalcon/channel" | tr -d '[:space:]')
         if [[ "$BRANCH" == "dev" ]]; then
-            VER_PREFIX="4.6_dev"
+            VER_PREFIX="4.9_dev"
         elif [[ "$BRANCH" == "beta2" ]]; then
-            VER_PREFIX="4.6_beta"
+            VER_PREFIX="4.9_beta"
         else
             BRANCH="main"
-            VER_PREFIX="9_stable"
+            VER_PREFIX="4.9_stable"
         fi
     elif [ "$silent_install" = "false" ]; then
         echo -e "  ${C_CYAN}┌────────────────────────────────────────────────────────┐${C_RESET}"
@@ -341,15 +341,15 @@ install_tool() {
         ch_choice=${ch_choice:-1}
         if [[ "$ch_choice" == "1" ]]; then
             BRANCH="main"
-            VER_PREFIX="9_stable"
+            VER_PREFIX="4.9_stable"
             echo -e "\n  ${C_GREEN}✅ Stable channel selected.${C_RESET}\n"
         elif [[ "$ch_choice" == "2" ]]; then
             BRANCH="beta2"
-            VER_PREFIX="4.6_beta"
+            VER_PREFIX="4.9_beta"
             echo -e "\n  ${C_YELLOW}🚀 Beta channel selected.${C_RESET}\n"
         else
             BRANCH="dev"
-            VER_PREFIX="4.6_dev"
+            VER_PREFIX="4.9_dev"
             echo -e "\n  ${C_PURPLE}🧪 Dev channel (Bleeding-Edge) selected.${C_RESET}\n"
         fi
     fi

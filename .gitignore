@@ -1,1 +1,2 @@
-Nothing should be ignored based on the provided file changes. The only modified file is `install.sh`, which is a shell script and should not be added to .gitignore.
+# No changes needed - only source/config files were modified
+# README.md and install.sh are source files that should not be ignored
