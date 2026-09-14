@@ -8,8 +8,10 @@ FM_PAYLOAD=(menu.sh ssh update_panel.sh npvt_edit.py npvs_edit.py nm_edit.py ziv
 
 # ── مفتاح التشفير: لا يُكتب هنا ولا في أي ملف يُرفع للمستودع العام ──
 # يُقرأ من tools/.payload_key (محلي، Git-ignored). نفس القيمة يجب أن
-# تكون محفوظة بصيغة معكوسة+base64 في files/syscache بمستودع instalasi،
-# لأن install.sh وsrc/menu.sh يجلبانها منه وقت التشغيل عبر _fm_pkey().
+# تكون منسوخة أيضًا لملف payload.key على سيرفر الترخيص الحقيقي
+# (tools/license-key-server/) — هو من يتحقق من الترخيص فعليًا قبل ما
+# يسلّم هذا المفتاح لـinstall.sh/src/menu.sh وقت التشغيل عند العميل،
+# عبر _fm_pkey(). راجع tools/license-key-server/DEPLOY.md للنشر.
 FM_PAYLOAD_KEY_FILE="tools/.payload_key"
 
 # يطبع المفتاح الحالي، أو يفشل برسالة واضحة إذا ما كان موجودًا بعد.
@@ -20,13 +22,4 @@ _fm_payload_key() {
         return 1
     fi
     tr -d '[:space:]' < "$FM_PAYLOAD_KEY_FILE"
-}
-
-# يحوّل مفتاح إلى الصيغة اللي يخزّنها files/syscache في instalasi
-# (نفس عكس/فك التشفير اللي تسويه _fm_pkey() وقت التشغيل، بالعكس):
-# اعكس النص ثم base64.
-_fm_payload_key_to_syscache() {
-    local key="$1" rev="" i
-    for (( i=${#key}-1; i>=0; i-- )); do rev+="${key:$i:1}"; done
-    printf '%s' "$rev" | base64 | tr -d '\n'
 }

@@ -1,0 +1,22 @@
+[Unit]
+Description=DAHOOM License Key Server
+After=network.target
+
+[Service]
+Type=simple
+User=fmkeysrv
+Group=fmkeysrv
+WorkingDirectory=/opt/fm-key-server
+ExecStart=/usr/bin/python3 /opt/fm-key-server/server.py --port 8420
+Restart=on-failure
+RestartSec=3
+
+# صلاحيات مخفَّضة — السيرفر لا يحتاج شي غير قراءة/كتابة مجلده الخاص
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/fm-key-server
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

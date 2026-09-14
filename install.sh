@@ -85,22 +85,34 @@ _FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2luc3RhbGFzaS9jb25
 _FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vY29uZmlnL3JlZy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
 _fm_licenses_url_fallback() { printf '%s' "$_FM_LIC_FALLBACK_B64" | base64 -d 2>/dev/null; }
-# The payload decryption key doesn't live in this file at all — it's fetched
-# from a second, unrelated repo at first use and cached for this run only.
+# Unrelated static assets (netrelay binaries) still live in this second
+# repo and are fetched from it elsewhere in this file — kept for that.
 _FM_INSTALASI_RAW_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vZmlsZXM="
 _fm_instalasi_raw() { printf '%s' "$_FM_INSTALASI_RAW_B64" | base64 -d 2>/dev/null; }
+# The payload decryption key is NOT derivable from any public file anymore
+# (the old "reverse a base64 blob from a public repo" trick let anyone
+# compute it, license or not — see tools/license-key-server/). It is held
+# only on this server and released over HTTPS after it actually verifies
+# the license id — not merely reads a public file.
+_FM_LICSRV_B64="aHR0cHM6Ly9kZS5kYWhvb20uZGU1Lm5ldA=="
+_fm_licsrv_url() { printf '%s' "$_FM_LICSRV_B64" | base64 -d 2>/dev/null; }
 _FM_PKEY_CACHE=""
+_FM_PKEY_CACHE_ID=""
 _fm_pkey() {
-    [ -n "$_FM_PKEY_CACHE" ] && { printf '%s' "$_FM_PKEY_CACHE"; return 0; }
-    local enc rev out i
-    enc="$(curl -fsS --max-time 8 "$(_fm_instalasi_raw)/syscache" 2>/dev/null)"
-    [ -n "$enc" ] || return 1
-    rev="$(printf '%s' "$enc" | base64 -d 2>/dev/null)"
-    [ -n "$rev" ] || return 1
-    out=""
-    for (( i=${#rev}-1; i>=0; i-- )); do out+="${rev:$i:1}"; done
-    _FM_PKEY_CACHE="$out"
-    printf '%s' "$out"
+    local id="$1" resp key
+    [ -n "$id" ] || return 1
+    if [ -n "$_FM_PKEY_CACHE" ] && [ "$_FM_PKEY_CACHE_ID" = "$id" ]; then
+        printf '%s' "$_FM_PKEY_CACHE"; return 0
+    fi
+    resp="$(curl -fsS --max-time 8 -X POST "$(_fm_licsrv_url)/v1/key" \
+                 -H 'Content-Type: application/json' \
+                 --data-binary "{\"license\":\"${id}\"}" 2>/dev/null)"
+    [ -n "$resp" ] || return 1
+    key="$(printf '%s' "$resp" | sed -n 's/.*"key" *: *"\([^"]*\)".*/\1/p')"
+    [ -n "$key" ] || return 1
+    _FM_PKEY_CACHE="$key"
+    _FM_PKEY_CACHE_ID="$id"
+    printf '%s' "$key"
 }
 
 fm_gate() {
@@ -165,10 +177,10 @@ fm_gate() {
         rm -f "$enc"; echo -e "${C_RED}[FAIL] Could not download the payload.${C_RESET}"; exit 1
     fi
     rm -rf "$FM_SRC"; mkdir -p "$FM_SRC"; chmod 700 "$FM_SRC"
-    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:$(_fm_pkey)" 2>/dev/null \
+    if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$enc" -pass "pass:$(_fm_pkey "$id")" 2>/dev/null \
          | tar -xzf - -C "$FM_SRC" 2>/dev/null || [ ! -f "$FM_SRC/menu.sh" ]; then
         rm -f "$enc"; rm -rf "$FM_SRC"
-        echo -e "${C_RED}[FAIL] Payload could not be decrypted.${C_RESET}"; exit 1
+        echo -e "${C_RED}[FAIL] Payload could not be decrypted (invalid/revoked license, or the license server is unreachable).${C_RESET}"; exit 1
     fi
     rm -f "$enc"
 

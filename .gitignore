@@ -16,5 +16,6 @@ src/
 tools/.worker.env
 tools/.clients.db
 tools/.payload_key
+tools/license-key-server/access.log
 .license-data/
 .license-token
