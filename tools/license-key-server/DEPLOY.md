@@ -32,8 +32,10 @@ sudo ss -tlnp | grep -E ':80|:443'
 من جهازك (مو من الـVPS)، بمجلد `tools/license-key-server/` بمستودع fm:
 
 ```bash
-scp server.py fm-key-server.service root@YOUR_VPS_IP:/tmp/
+scp server.py fm-key-server.service patch-haproxy-sni.sh root@YOUR_VPS_IP:/tmp/
 ```
+(`patch-haproxy-sni.sh` يُستخدم فقط لو دخلت القسم ب أدناه — انسخه
+لجذر الـVPS مثلًا `/opt/fm-key-server/` بالخطوة التالية.)
 
 ## 2) إعداد مستخدم مخصّص وملفات الخدمة (على الـVPS)
 
@@ -41,6 +43,8 @@ scp server.py fm-key-server.service root@YOUR_VPS_IP:/tmp/
 sudo useradd --system --no-create-home --shell /usr/sbin/nologin fmkeysrv
 sudo mkdir -p /opt/fm-key-server
 sudo mv /tmp/server.py /opt/fm-key-server/
+sudo mv /tmp/patch-haproxy-sni.sh /opt/fm-key-server/ 2>/dev/null
+sudo chmod +x /opt/fm-key-server/patch-haproxy-sni.sh 2>/dev/null
 sudo chown -R fmkeysrv:fmkeysrv /opt/fm-key-server
 ```
 
@@ -103,11 +107,14 @@ sudo ufw allow 443/tcp
 
 ## القسم ب) VPS عنده haproxy أصلًا (منتج DAHOOM مثبّت) — nginx خلفه
 
-`haproxy` يملك `*:80` و`*:443` ويفحص أول بايتات كل اتصال (SSH مقابل
-HTTP/TLS عادي). يمرّر HTTP الصافي إلى `127.0.0.1:8880`، وTLS بـALPN
-ويب (`h2`/`http/1.1`) إلى `127.0.0.1:8443` — راجع
-`/etc/haproxy/haproxy.cfg` (backends `nginx_cleartext` وnginx_tls`).
-لازم nginx يستمع بالضبط على هذين المنفذين، مو على 80/443 مباشرة.
+هذا هو الوضع **الأشيع فعليًا** (مُختبر ومؤكَّد يعمل بالكامل). `haproxy`
+يملك `*:80` و`*:443` ويفحص أول بايتات كل اتصال (SSH مقابل HTTP/TLS
+عادي). يمرّر HTTP الصافي لـ`127.0.0.1:8880`، وTLS العادي (بقية
+النطاقات) لـ`127.0.0.1:8443` — راجع `/etc/haproxy/haproxy.cfg`
+(backends `nginx_cleartext` وnginx_tls`). دومينك تحديدًا يحتاج قاعدة
+توجيه إضافية بـhaproxy (بالـSNI) + PROXY protocol، وإلا عنوان IP
+العميل الحقيقي يضيع بالكامل (كل الطلبات تبدو من 127.0.0.1 لسيرفر
+الترخيص — يكسر أي ترخيص مربوط بـIP).
 
 **ب-1) مجلد تحدي ACME + vhost مؤقت على 8880:**
 ```bash
@@ -132,8 +139,10 @@ sudo apt install -y certbot
 sudo certbot certonly --webroot -w /var/www/de-dahoom -d de.dahoom.de5.net
 ```
 
-**ب-3) استبدل الإعداد بالصيغة النهائية** (8880 يعيد التوجيه، 8443
-هو الفعلي بالشهادة الحقيقية):
+**ب-3) استبدل الإعداد بالصيغة النهائية** — 8880 يعيد التوجيه، **8444**
+(لا 8443 — هذا منفذ مخصَّص لدومينك وحده، منفصل تمامًا عن `nginx_tls`
+اللي يخدم بقية نطاقاتك، حتى ما نتعارض معها) بـPROXY protocol لحفظ
+عنوان IP الحقيقي:
 ```bash
 sudo tee /etc/nginx/sites-available/de.dahoom.de5.net > /dev/null << 'EOF'
 server {
@@ -143,15 +152,15 @@ server {
     location / { return 301 https://$host$request_uri; }
 }
 server {
-    listen 127.0.0.1:8443 ssl;
+    listen 127.0.0.1:8444 ssl proxy_protocol;
     server_name de.dahoom.de5.net;
     ssl_certificate     /etc/letsencrypt/live/de.dahoom.de5.net/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/de.dahoom.de5.net/privkey.pem;
     location / {
         proxy_pass http://127.0.0.1:8420;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $proxy_protocol_addr;
+        proxy_set_header X-Forwarded-For $proxy_protocol_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
@@ -162,7 +171,22 @@ sudo nginx -t && sudo systemctl reload nginx
 (نفس هذا الإعداد موجود جاهز كقالب بملف
 `nginx-behind-haproxy.conf.example` — بدّل `DOMAIN` بدومينك.)
 
-لا حاجة لأي تعديل بالجدار الناري هنا — المنفذان 8880/8443 مربوطان
+**ب-4) وجّه haproxy لدومينك تحديدًا (خطوة إلزامية — بدونها الطلبات
+تروح لـ`nginx_tls` العادي وتفشل):** شغّل السكربت الجاهز، آمن للتكرار:
+```bash
+sudo /opt/fm-key-server/patch-haproxy-sni.sh de.dahoom.de5.net 8444
+```
+يتحقق من صياغة haproxy قبل أي تحميل، ولا يوقف الخدمة القائمة لو فشل
+التحقق (haproxy يرفض إعداد خاطئ ويبقي القديم شغّال).
+
+**⚠️ تحذير مهم ودائم:** لو استخدمت قائمة **"Connection Modes"**
+بالبانل على هذا الـVPS (أي شي يستدعي `write_haproxy_edge_config`)،
+تنعاد كتابة `/etc/haproxy/haproxy.cfg` بالكامل من الصفر وتُمحى قاعدة
+التوجيه هذي. **أعد تشغيل `patch-haproxy-sni.sh` بعد أي استخدام لتلك
+القائمة.** ملف nginx الخاص بدومينك (`sites-available/de.dahoom.de5.net`)
+غير متأثر — فقط haproxy.cfg.
+
+لا حاجة لأي تعديل بالجدار الناري — المنافذ 8880/8444 مربوطة
 بـ`127.0.0.1` فقط، وhaproxy أصلًا يتحكّم بما يدخل من الإنترنت على
 80/443.
 
@@ -205,3 +229,6 @@ curl -s -X POST https://de.dahoom.de5.net/v1/key \
   `/opt/fm-key-server/payload.key` بنفس القيمة الجديدة بالضبط، ثم
   `sudo systemctl restart fm-key-server`. بدون هذي الخطوة، أي `menu.enc`
   جديد يفشل فكّه لكل العملاء (السيرفر بيرجّع المفتاح القديم).
+- **(القسم ب فقط) بعد أي استخدام لقائمة "Connection Modes" بالبانل**:
+  أعد تشغيل `sudo /opt/fm-key-server/patch-haproxy-sni.sh de.dahoom.de5.net 8444`
+  — تلك القائمة تعيد كتابة haproxy.cfg وتمحو قاعدة التوجيه.
