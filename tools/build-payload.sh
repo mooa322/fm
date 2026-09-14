@@ -10,9 +10,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . tools/_fmcrypto.sh
 
-# Must match FM_PKEY in install.sh, src/menu.sh and src/update_panel.sh —
-# it's embedded there since there's no live server to hold it secretly.
-PAYLOAD_KEY="5YgZ9dsnTEKkBgehniA2lYGEuV90wZ2LKmu5okur4"
+# المفتاح يُقرأ من ملف محلي غير مرفوع للمستودع العام — راجع _fmcrypto.sh.
+# أول مرة؟ شغّل ./tools/gen-payload-key.sh لتوليد مفتاح وحفظه محليًا.
+PAYLOAD_KEY="$(_fm_payload_key)" || exit 1
 
 command -v openssl >/dev/null || { echo "[ERROR] openssl required"; exit 1; }
 for f in "${FM_PAYLOAD[@]}"; do [ -f "$FM_SRC_DIR/$f" ] || { echo "[ERROR] missing $FM_SRC_DIR/$f"; exit 1; }; done
