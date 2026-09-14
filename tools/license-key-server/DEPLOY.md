@@ -3,17 +3,36 @@
 خطوات كاملة تنسخها وتشغّلها بالـSSH على الـVPS. مبنية لأوبنتو/دبيان
 (apt) — عدّل أوامر التثبيت إذا نظامك مختلف.
 
-**قبل البدء:** وجّه سجل DNS من نوع A لـ `de.dahoom.de5.net` لعنوان IP
-تبع هذا الـVPS (من لوحة تحكم مزوّد الدومين تبعك). انتظر حتى ينتشر
-(عادة دقائق، أحيانًا أطول) قبل خطوة Caddy — تقدر تتحقق بـ:
+**قبل البدء:** وجّه سجل DNS من نوع A لدومينك (مثال يُستخدم أدناه:
+`de.dahoom.de5.net`) لعنوان IP هذا الـVPS. تحقق بـ:
 `dig +short de.dahoom.de5.net`
 
-## 1) نسخ الملفات للسيرفر
+## أي إعداد HTTPS أمامي أستخدم؟
+
+هذا السيرفر يحتاج شهادة HTTPS حقيقية أمامه. فيه احتمالان:
+
+- **VPS نظيف** (لا شي يستخدم المنفذين 80/443 بعد) → استخدم **Caddy**
+  (القسم أ أدناه) — أبسط، شهادة تلقائية بلا أي إعداد يدوي.
+- **VPS مثبّت عليه منتج DAHOOM/firewallfalcon نفسه بالفعل** (الحالة
+  الأشيع فعليًا — أي سيرفر تبيع منه تراخيص) → عنده `haproxy` أصلًا
+  يملك المنفذين 80/443 لتقنية "SSH على منفذ الويب"، ولازم نستخدم
+  **nginx خلفه** على المنافذ الداخلية اللي يتوقعها (القسم ب) — Caddy
+  ما يقدر ياخذ 80/443 لأنها مشغولة أصلًا.
+
+للتأكد أي حالة عندك:
+```bash
+sudo ss -tlnp | grep -E ':80|:443'
+```
+لو طلعت `haproxy` → اذهب للقسم ب مباشرة.
+
+---
+
+## 1) نسخ الملفات للسيرفر (لكلا الحالتين)
 
 من جهازك (مو من الـVPS)، بمجلد `tools/license-key-server/` بمستودع fm:
 
 ```bash
-scp server.py fm-key-server.service Caddyfile root@YOUR_VPS_IP:/tmp/
+scp server.py fm-key-server.service root@YOUR_VPS_IP:/tmp/
 ```
 
 ## 2) إعداد مستخدم مخصّص وملفات الخدمة (على الـVPS)
@@ -46,14 +65,16 @@ sudo systemctl enable --now fm-key-server
 sudo systemctl status fm-key-server   # لازم "active (running)"
 ```
 
-تحقق سريع محلي (على نفس الـVPS، قبل ما نضيف HTTPS):
+تحقق سريع محلي (قبل ما نضيف HTTPS):
 
 ```bash
 curl -s http://127.0.0.1:8420/v1/health
 # → {"status": "ok"}
 ```
 
-## 5) تثبيت Caddy (إذا مو مثبّت أصلًا)
+---
+
+## القسم أ) VPS نظيف — Caddy
 
 ```bash
 sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
@@ -65,41 +86,113 @@ sudo apt update
 sudo apt install -y caddy
 ```
 
-## 6) إعداد Caddy
-
+انسخ `Caddyfile` من نفس المجلد لـ`/etc/caddy/Caddyfile` (عدّل
+الدومين بداخله إذا مختلف)، ثم:
 ```bash
-sudo mv /tmp/Caddyfile /etc/caddy/Caddyfile
 sudo systemctl reload caddy
 ```
+Caddy يصدر شهادة Let's Encrypt تلقائيًا أول ما يستقبل طلب — لا حاجة
+لأي إعداد شهادات يدوي. تأكد إن 80 و443 مفتوحين بالجدار الناري إن وجد:
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
+بعدها اذهب مباشرة لقسم "الاختبار النهائي" بالأسفل.
 
-Caddy يصدر شهادة Let's Encrypt تلقائيًا أول ما يستقبل طلب على
-الدومين — لا حاجة لأي إعداد شهادات يدوي.
+---
 
-## 7) الاختبار النهائي (من أي جهاز، حتى جهازك الشخصي)
+## القسم ب) VPS عنده haproxy أصلًا (منتج DAHOOM مثبّت) — nginx خلفه
+
+`haproxy` يملك `*:80` و`*:443` ويفحص أول بايتات كل اتصال (SSH مقابل
+HTTP/TLS عادي). يمرّر HTTP الصافي إلى `127.0.0.1:8880`، وTLS بـALPN
+ويب (`h2`/`http/1.1`) إلى `127.0.0.1:8443` — راجع
+`/etc/haproxy/haproxy.cfg` (backends `nginx_cleartext` وnginx_tls`).
+لازم nginx يستمع بالضبط على هذين المنفذين، مو على 80/443 مباشرة.
+
+**ب-1) مجلد تحدي ACME + vhost مؤقت على 8880:**
+```bash
+sudo mkdir -p /var/www/de-dahoom/.well-known/acme-challenge
+sudo tee /etc/nginx/sites-available/de.dahoom.de5.net > /dev/null << 'EOF'
+server {
+    listen 127.0.0.1:8880;
+    server_name de.dahoom.de5.net;
+
+    location /.well-known/acme-challenge/ { root /var/www/de-dahoom; }
+    location / { return 200 "ok\n"; }
+}
+EOF
+sudo ln -sf /etc/nginx/sites-available/de.dahoom.de5.net /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+**ب-2) اطلب الشهادة بوضع webroot** (بلا ما يلمس certbot إعداد nginx تلقائيًا —
+مهم، لأن الإضافة الافتراضية `--nginx` تضيف `listen 443` اللي يتعارض مع haproxy):
+```bash
+sudo apt install -y certbot
+sudo certbot certonly --webroot -w /var/www/de-dahoom -d de.dahoom.de5.net
+```
+
+**ب-3) استبدل الإعداد بالصيغة النهائية** (8880 يعيد التوجيه، 8443
+هو الفعلي بالشهادة الحقيقية):
+```bash
+sudo tee /etc/nginx/sites-available/de.dahoom.de5.net > /dev/null << 'EOF'
+server {
+    listen 127.0.0.1:8880;
+    server_name de.dahoom.de5.net;
+    location /.well-known/acme-challenge/ { root /var/www/de-dahoom; }
+    location / { return 301 https://$host$request_uri; }
+}
+server {
+    listen 127.0.0.1:8443 ssl;
+    server_name de.dahoom.de5.net;
+    ssl_certificate     /etc/letsencrypt/live/de.dahoom.de5.net/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/de.dahoom.de5.net/privkey.pem;
+    location / {
+        proxy_pass http://127.0.0.1:8420;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+(نفس هذا الإعداد موجود جاهز كقالب بملف
+`nginx-behind-haproxy.conf.example` — بدّل `DOMAIN` بدومينك.)
+
+لا حاجة لأي تعديل بالجدار الناري هنا — المنفذان 8880/8443 مربوطان
+بـ`127.0.0.1` فقط، وhaproxy أصلًا يتحكّم بما يدخل من الإنترنت على
+80/443.
+
+**تجديد الشهادة لاحقًا** (كل ~90 يوم، certbot يضيف مهمة تلقائية
+افتراضيًا، لكن تأكد إنها تعيد تحميل nginx بعد التجديد):
+```bash
+echo '#!/bin/sh
+systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+```
+
+---
+
+## الاختبار النهائي (من أي جهاز، حتى جهازك الشخصي)
 
 ```bash
 # فحص الصحة
 curl -s https://de.dahoom.de5.net/v1/health
 # → {"status": "ok"}
 
-# طلب مفتاح بترخيص صالح فعليًا (بدّل owner بترخيص حقيقي من reg.json)
+# طلب مفتاح بترخيص صالح فعليًا (بدّل بترخيص حقيقي من reg.json)
 curl -s -X POST https://de.dahoom.de5.net/v1/key \
      -H 'Content-Type: application/json' \
-     -d '{"license":"owner"}'
+     -d '{"license":"REPLACE_ME"}'
 # ترخيص صالح  → {"key": "..."}
 # ترخيص وهمي → {"error": "not_found"}  (HTTP 403)
 ```
 
-## 8) الجدار الناري (إن وجد)
-
-المنفذ 8420 مربوط بـ`127.0.0.1` فقط أصلًا (Caddy وحده يوصله) — لا
-حاجة لفتحه بالجدار الناري. تأكد فقط إن 80 و443 مفتوحين (Caddy
-يحتاجهم لـHTTP→HTTPS ولإصدار الشهادة):
-
-```bash
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-```
+ثم تجربة حقيقية كاملة: `curl -fsSL https://raw.githubusercontent.com/mooa322/fm/main/install.sh | bash`
+على سيرفر عميل، وتأكد إن فك التشفير ينجح.
 
 ## المراقبة والصيانة
 

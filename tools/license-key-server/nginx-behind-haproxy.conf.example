@@ -1,0 +1,44 @@
+# DAHOOM · إعداد nginx لسيرفر مفتاح الترخيص خلف haproxy القائم
+#
+# ينطبق على أي VPS مثبّت عليه منتج DAHOOM/firewallfalcon نفسه — هذا
+# التثبيت يضع haproxy أمام المنفذين 80/443 يفحص أول بايتات كل اتصال
+# ليميّز SSH عن HTTP/HTTPS عادي (لتقنية "SSH على منفذ الويب")، ويمرّر
+# HTTP الصافي إلى 127.0.0.1:8880 وHTTPS العادي (ALPN=web) إلى
+# 127.0.0.1:8443 — راجع /etc/haproxy/haproxy.cfg (backends
+# nginx_cleartext وnginx_tls). لازم nginx يستمع على هذين المنفذين
+# بالضبط، لا على 80/443 مباشرة (haproxy يملكهما أصلًا ولن يسمح لأي
+# شي آخر بالربط عليهما).
+#
+# استبدل DOMAIN بدومينك الفعلي، ثم:
+#   1) انسخ هذا لـ /etc/nginx/sites-available/DOMAIN
+#   2) sudo ln -s /etc/nginx/sites-available/DOMAIN /etc/nginx/sites-enabled/
+#   راجع DEPLOY.md للترتيب الكامل (الشهادة تُطلب بوضع webroot أولًا،
+#   قبل ما تفعّل كتلة 8443 هذي، لأن الشهادة ما تكون موجودة بعد).
+
+server {
+    listen 127.0.0.1:8880;
+    server_name DOMAIN;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/DOMAIN;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 127.0.0.1:8443 ssl;
+    server_name DOMAIN;
+
+    ssl_certificate     /etc/letsencrypt/live/DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/DOMAIN/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8420;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
