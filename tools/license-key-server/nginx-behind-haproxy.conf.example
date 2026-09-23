@@ -1,0 +1,49 @@
+# DAHOOM · إعداد nginx لسيرفر مفتاح الترخيص خلف haproxy القائم
+#
+# ينطبق على أي VPS مثبّت عليه منتج DAHOOM/firewallfalcon نفسه — هذا
+# التثبيت يضع haproxy أمام المنفذين 80/443 يفحص أول بايتات كل اتصال
+# ليميّز SSH عن HTTP/HTTPS عادي (لتقنية "SSH على منفذ الويب"). لازم
+# قاعدة إضافية بـhaproxy.cfg توجّه TLS بـSNI = دومينك لهذا الـvhost
+# تحديدًا (127.0.0.1:8444) مع PROXY protocol — راجع patch-haproxy-sni.sh
+# بنفس المجلد، يطبّقها تلقائيًا وبأمان (idempotent).
+#
+# لماذا PROXY protocol تحديدًا؟ haproxy بوضع TCP الصرف (mode tcp) لا
+# يحافظ على عنوان IP العميل الحقيقي افتراضيًا — كل الطلبات تصل
+# لـnginx وكأنها من 127.0.0.1، مما يكسر أي ترخيص مربوط بـIP بالكامل.
+# PROXY protocol (send-proxy بجهة haproxy + proxy_protocol بجهة nginx)
+# يحلّ هذا فعليًا — مُختبر ومؤكَّد يعمل.
+#
+# استبدل DOMAIN بدومينك الفعلي، ثم:
+#   1) انسخ هذا لـ /etc/nginx/sites-available/DOMAIN
+#   2) sudo ln -s /etc/nginx/sites-available/DOMAIN /etc/nginx/sites-enabled/
+#   راجع DEPLOY.md للترتيب الكامل (الشهادة تُطلب بوضع webroot أولًا،
+#   قبل ما تفعّل كتلة 8444 هذي، لأن الشهادة ما تكون موجودة بعد؛
+#   وpatch-haproxy-sni.sh يُطبَّق بعد nginx -t الناجح).
+
+server {
+    listen 127.0.0.1:8880;
+    server_name DOMAIN;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/DOMAIN;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 127.0.0.1:8444 ssl proxy_protocol;
+    server_name DOMAIN;
+
+    ssl_certificate     /etc/letsencrypt/live/DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/DOMAIN/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8420;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $proxy_protocol_addr;
+        proxy_set_header X-Forwarded-For $proxy_protocol_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
