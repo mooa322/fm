@@ -20,6 +20,7 @@ MENU_BIN="/usr/local/bin/dahoom"
 FF_DIR="/etc/firewallfalcon"
 INSTALL_FLAG="$FF_DIR/.install"
 VERSION_FILE="$FF_DIR/.version"
+PAYLOAD_VERSION_FILE="$FF_DIR/.payload_version"
 
 # Branch Configuration (Dynamic)
 BRANCH="dev"
@@ -80,7 +81,11 @@ fi
 # tools/license-panel.sh) once they know the client's server.
 FM_SRC="$FF_DIR/.src"
 FM_LICENSE="$FF_DIR/.license"
-PAYLOAD_URL="$(_fm_gh_raw)/main/menu.enc"
+# All channels currently install the same encrypted release from main.
+# Keep the legacy channel SHA in .version for the menu's own updater, and
+# track this release separately in .payload_version.
+PAYLOAD_BRANCH="main"
+PAYLOAD_URL="$(_fm_gh_raw)/${PAYLOAD_BRANCH}/menu.enc"
 _FM_LIC_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2luc3RhbGFzaS9jb250ZW50cy9jb25maWcvcmVnLmpzb24/cmVmPW1haW4="
 _FM_LIC_FALLBACK_B64="aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL21vb2EzMjIvaW5zdGFsYXNpL21haW4vY29uZmlnL3JlZy5qc29u"
 _fm_licenses_url() { printf '%s' "$_FM_LIC_B64" | base64 -d 2>/dev/null; }
@@ -196,22 +201,43 @@ _FM_GH_API_B64="aHR0cHM6Ly9hcGkuZ2l0aHViLmNvbS9yZXBvcy9tb29hMzIyL2Zt"
 _fm_gh_api() { printf '%s' "$_FM_GH_API_B64" | base64 -d 2>/dev/null; }
 
 fetch_remote_sha() {
-    local api_json commit_sha
-    if command -v jq &>/dev/null; then
-        api_json=$(curl -s --max-time 4 "$(_fm_gh_api)/branches/${BRANCH}" 2>/dev/null)
-        if [[ -n "$api_json" ]]; then
-            commit_sha=$(echo "$api_json" | jq -r '.commit.sha' 2>/dev/null | cut -c1-7)
-            if [[ -n "$commit_sha" && "$commit_sha" != "null" ]]; then
-                echo "$commit_sha"
-                return
-            fi
+    local branch="${1:-$BRANCH}" api_json commit_sha
+    if api_json=$(curl -fsSL --max-time 8 "$(_fm_gh_api)/branches/${branch}" 2>/dev/null); then
+        # GitHub's branch response contains the commit SHA. grep is already
+        # required by this installer, so update detection must not need jq.
+        commit_sha=$(printf '%s\n' "$api_json" | grep -oE '"sha"[[:space:]]*:[[:space:]]*"[0-9a-fA-F]{40}"' | head -n 1 | grep -oE '[0-9a-fA-F]{40}' | cut -c1-7) || true
+        if [[ "$commit_sha" =~ ^[0-9a-fA-F]{7}$ ]]; then
+            printf '%s\n' "$commit_sha"
+            return 0
         fi
     fi
-    echo ""
+    return 1
+}
+
+fetch_payload_sha() {
+    local headers sha
+    # The raw endpoint's ETag identifies the encrypted file itself. A branch
+    # commit SHA also changes when unrelated files (such as install.sh) change.
+    headers=$(curl -fsSIL --max-time 8 "$PAYLOAD_URL" 2>/dev/null) || return 1
+    sha=$(printf '%s\n' "$headers" | sed -nE 's/^[Ee][Tt][Aa][Gg]:[[:space:]]*(W\/)?"([0-9a-fA-F]{64})".*/\2/p' | tail -n 1)
+    [[ "$sha" =~ ^[0-9a-fA-F]{64}$ ]] || return 1
+    printf '%s\n' "$sha"
+}
+
+get_installed_payload_sha() {
+    [[ -s "$PAYLOAD_VERSION_FILE" ]] || return 1
+    tr -d ' \r\n' < "$PAYLOAD_VERSION_FILE"
+}
+
+save_installed_payload_sha() {
+    local sha="$1"
+    [[ "$sha" =~ ^[0-9a-fA-F]{64}$ ]] || return 1
+    mkdir -p "$FF_DIR"
+    printf '%s\n' "$sha" > "$PAYLOAD_VERSION_FILE"
 }
 
 fetch_remote_version() {
-    local sha; sha=$(fetch_remote_sha)
+    local sha; sha=$(fetch_remote_sha || true)
     if [[ -n "$sha" ]]; then
         echo "${VER_PREFIX}_${sha}"
     else
@@ -239,6 +265,9 @@ get_installed_version() {
 save_installed_version() {
     local ver="$1"
     local sha="${ver##*_}"
+    # Never replace a valid channel marker with the display-only "latest"
+    # fallback when GitHub's branch API is temporarily unavailable.
+    [[ "$sha" =~ ^[0-9a-fA-F]{7}$ ]] || return 0
     mkdir -p "$FF_DIR" 2>/dev/null
     echo "$sha" > "$VERSION_FILE"
 }
@@ -252,6 +281,8 @@ validate_menu_payload() {
     local file="$1"
     [[ -s "$file" && -f "$file" ]] || return 1
     bash -n "$file" 2>/dev/null || return 1
+    [[ -s "$FM_SRC/update_panel.sh" && -s "$FM_SRC/panel/panel.py" ]] || return 1
+    bash -n "$FM_SRC/update_panel.sh" 2>/dev/null || return 1
     grep -qF '_fm_bot_cmd_changehwid_start' "$file" || return 1
     grep -qF '_fm_bot_cmd_renew_start' "$file" || return 1
     grep -qF '_fm_bot_admin_account_card' "$file" || return 1
@@ -261,6 +292,15 @@ install_menu_payload() {
     validate_menu_payload "$source" || { echo -e "${C_RED}[FAIL] Invalid menu payload; installation stopped.${C_RESET}"; return 1; }
     local tmp="${MENU_BIN}.tmp.$$"
     cp -f "$source" "$tmp" && chmod 755 "$tmp" && mv -f "$tmp" "$MENU_BIN"
+}
+
+finish_menu_update() {
+    # The panel and long-running Telegram bot must load the same release as
+    # the CLI. update_panel.sh refreshes both when they are configured.
+    if [[ ! -f "$FM_SRC/update_panel.sh" ]] || ! FM_USE_PREVALIDATED_SRC=1 bash "$FM_SRC/update_panel.sh"; then
+        echo -e "${C_RED}[FAIL] Menu copied, but panel/bot update did not complete. Version was not advanced.${C_RESET}"
+        return 1
+    fi
 }
 
 # Helper to download files (supports both curl and wget)
@@ -357,6 +397,7 @@ install_tool() {
             VER_PREFIX="4.6_stable"
         fi
     elif [ "$silent_install" = "false" ]; then
+        echo -e "  ${C_YELLOW}Note: All channels currently use the main/menu.enc encrypted release.${C_RESET}"
         echo -e "  ${C_CYAN}┌────────────────────────────────────────────────────────┐${C_RESET}"
         echo -e "  ${C_CYAN}│${C_RESET}  ${C_BOLD}Select Update Channel:${C_RESET}                                ${C_CYAN}│${C_RESET}"
         echo -e "  ${C_CYAN}│${C_RESET}                                                        ${C_CYAN}│${C_RESET}"
@@ -448,6 +489,8 @@ install_tool() {
     bash "$MENU_BIN" --install-setup >/dev/null 2>&1 || bash "$MENU_BIN" --install-setup
     local new_ver; new_ver=$(fetch_remote_version)
     save_installed_version "$new_ver"
+    local payload_sha; payload_sha=$(fetch_payload_sha || true)
+    [[ -z "$payload_sha" ]] || save_installed_payload_sha "$payload_sha"
 
     echo
     echo -e "  ${C_CYAN}┌── Installation Complete ────────────────────────────────┐${C_RESET}"
@@ -536,15 +579,17 @@ update_tool_page() {
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Checking GitHub updates...${C_RESET}"
     echo -e "  ${C_CYAN}└──────────────────────────────────────────────┘${C_RESET}"
     echo
-    show_progress_bar "Checking for latest updates on branch ($BRANCH)..." 15
+    show_progress_bar "Checking encrypted payload updates on branch ($PAYLOAD_BRANCH)..." 15
 
     local cur_ver; cur_ver=$(get_installed_version)
     local latest_ver; latest_ver=$(fetch_remote_version)
-    local cur_sha; cur_sha=$(get_installed_sha)
-    local latest_sha; latest_sha=$(fetch_remote_sha)
+    local cur_payload_sha; cur_payload_sha=$(get_installed_payload_sha || true)
+    local latest_payload_sha; latest_payload_sha=$(fetch_payload_sha || true)
+    local cur_payload_tag="${cur_payload_sha:0:12}"
+    local latest_payload_tag="${latest_payload_sha:0:12}"
 
     local has_update=false
-    if [[ -n "$latest_sha" && -n "$cur_sha" && "$cur_sha" != "$latest_sha" ]]; then
+    if [[ -n "$latest_payload_sha" && "$cur_payload_sha" != "$latest_payload_sha" ]]; then
         has_update=true
     fi
 
@@ -553,10 +598,15 @@ update_tool_page() {
     echo -e "  ${C_CYAN}┌── Update Manager ────────────────────────────┐${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Current :${C_RESET} ${C_YELLOW}${cur_ver}${C_RESET}"
     echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Latest  :${C_RESET} ${C_GREEN}${latest_ver}${C_RESET}"
-    echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Branch  :${C_RESET} ${C_CYAN}${BRANCH}${C_RESET}"
+    echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Payload :${C_RESET} ${C_CYAN}${PAYLOAD_BRANCH}/menu.enc${C_RESET}"
+    echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}SHA     :${C_RESET} ${cur_payload_tag:-unknown} → ${latest_payload_tag:-unknown}"
 
     if $has_update; then
-        echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_YELLOW}${C_BOLD}🚀 Update available${C_RESET}"
+        if [[ -z "$cur_payload_sha" ]]; then
+            echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_YELLOW}${C_BOLD}First payload check needed${C_RESET}"
+        else
+            echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_YELLOW}${C_BOLD}🚀 Update available${C_RESET}"
+        fi
         echo -e "  ${C_CYAN}└──────────────────────────────────────────────┘${C_RESET}"
         echo
         echo -e "  ${C_GREEN}[1]${C_RESET} Update Tool"
@@ -572,7 +622,9 @@ update_tool_page() {
                 show_progress_bar "Installing core binaries..." 20
                 install_menu_payload "$FM_SRC/menu.sh" || return 1
                 patch_menu_in_place "$MENU_BIN"
+                finish_menu_update || return 1
                 save_installed_version "$latest_ver"
+                save_installed_payload_sha "$latest_payload_sha"
 
                 echo
                 echo -e "  ${C_CYAN}┌── Update Complete ───────────────────────────┐${C_RESET}"
@@ -586,10 +638,18 @@ update_tool_page() {
                 ;;
         esac
     else
-        echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_GREEN}${C_BOLD}✅ Up to date${C_RESET}"
+        if [[ -z "$latest_payload_sha" || -z "$cur_payload_sha" ]]; then
+            echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_YELLOW}${C_BOLD}Could not check updates${C_RESET}"
+        else
+            echo -e "  ${C_CYAN}│${C_RESET}  ${C_WHITE}${C_BOLD}Status  :${C_RESET} ${C_GREEN}${C_BOLD}✅ Up to date${C_RESET}"
+        fi
         echo -e "  ${C_CYAN}└──────────────────────────────────────────────┘${C_RESET}"
         echo
-        echo -e "  ${C_GREEN}✨ System is up to date${C_RESET}"
+        if [[ -n "$latest_payload_sha" && -n "$cur_payload_sha" ]]; then
+            echo -e "  ${C_GREEN}✨ System is up to date${C_RESET}"
+        else
+            echo -e "  ${C_YELLOW}Update status is unknown. Check network access or reinstall/repair.${C_RESET}"
+        fi
         echo
         echo -e "  ${C_GREEN}[1]${C_RESET} Reinstall / Repair"
         echo -e "  ${C_RED}[0]${C_RESET} Back"
@@ -602,7 +662,9 @@ update_tool_page() {
             show_progress_bar "Re-installing core binaries..." 20
             install_menu_payload "$FM_SRC/menu.sh" || return 1
             patch_menu_in_place "$MENU_BIN"
+            finish_menu_update || return 1
             save_installed_version "$latest_ver"
+            [[ -z "$latest_payload_sha" ]] || save_installed_payload_sha "$latest_payload_sha"
 
             echo
             echo -e "  ${C_CYAN}┌── Repair Complete ───────────────────────────┐${C_RESET}"
@@ -627,6 +689,10 @@ panel_arabic_update() {
 
     fm_gate
     bash "$FM_SRC/update_panel.sh"
+    local payload_sha; payload_sha=$(fetch_payload_sha || true)
+    [[ -z "$payload_sha" ]] || save_installed_payload_sha "$payload_sha"
+    local new_ver; new_ver=$(fetch_remote_version)
+    save_installed_version "$new_ver"
 
     echo
     echo -e "  ${C_CYAN}┌── Update Complete ─────────────────────────────────────┐${C_RESET}"
@@ -640,15 +706,19 @@ panel_arabic_update() {
 show_details() {
     clear
     local cur_ver; cur_ver=$(get_installed_version)
-    local latest_ver; latest_ver=$(fetch_remote_version 2>/dev/null || true)
-    local cur_sha; cur_sha=$(get_installed_sha)
-    local latest_sha; latest_sha=$(fetch_remote_sha 2>/dev/null || true)
+    local cur_sha; cur_sha=$(get_installed_payload_sha || true)
+    local latest_sha; latest_sha=$(fetch_payload_sha 2>/dev/null || true)
+    _INSTALLER_LATEST_PAYLOAD_SHA="$latest_sha"
     local update_badge=""
     local has_up=false
 
-    if [[ -n "$latest_sha" && -n "$cur_sha" && "$cur_sha" != "$latest_sha" ]]; then
+    if [[ -n "$latest_sha" && "$cur_sha" != "$latest_sha" ]]; then
         has_up=true
-        update_badge=" ${C_YELLOW}${C_BOLD}[🚀 New: ${latest_ver}]${C_RESET}"
+        if [[ -z "$cur_sha" ]]; then
+            update_badge=" ${C_YELLOW}${C_BOLD}[Payload check needed]${C_RESET}"
+        else
+            update_badge=" ${C_YELLOW}${C_BOLD}[🚀 Payload update available]${C_RESET}"
+        fi
     fi
 
     echo -e ""
@@ -679,11 +749,15 @@ show_details() {
 installer_menu() {
     while true; do
         show_details
-        local cur_ver; cur_ver=$(get_installed_version)
-        local latest_ver; latest_ver=$(fetch_remote_version 2>/dev/null || true)
+        local cur_sha; cur_sha=$(get_installed_payload_sha || true)
+        local latest_sha="${_INSTALLER_LATEST_PAYLOAD_SHA:-}"
         local up_tag=""
-        if [[ -n "$latest_ver" && "$cur_ver" != "$latest_ver" ]]; then
-            up_tag=" ${C_YELLOW}${C_BOLD}(🚀 New Available)${C_RESET}"
+        if [[ -n "$latest_sha" && "$cur_sha" != "$latest_sha" ]]; then
+            if [[ -z "$cur_sha" ]]; then
+                up_tag=" ${C_YELLOW}${C_BOLD}(Check Needed)${C_RESET}"
+            else
+                up_tag=" ${C_YELLOW}${C_BOLD}(🚀 New Available)${C_RESET}"
+            fi
         fi
 
         echo -e ""
