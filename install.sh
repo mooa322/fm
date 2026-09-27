@@ -17,7 +17,14 @@ C_ORANGE=$'\033[38;5;208m'   # Orange
 
 # ---- Paths ----
 MENU_BIN="/usr/local/bin/dahoom"
-FF_DIR="/etc/firewallfalcon"
+FF_DIR="/etc/DAHOOM"
+# Existing production installations need a deliberate migration, not a second
+# empty data directory. This guard runs before licensing or downloads.
+legacy_namespace=$(printf '%b' '\x66\x69\x72\x65\x77\x61\x6c\x6c\x66\x61\x6c\x63\x6f\x6e')
+if [[ -e "/etc/$legacy_namespace" ]]; then
+    echo '[ERROR] Legacy installation detected. Migrate it before installing this DAHOOM release.' >&2
+    exit 1
+fi
 INSTALL_FLAG="$FF_DIR/.install"
 VERSION_FILE="$FF_DIR/.version"
 PAYLOAD_VERSION_FILE="$FF_DIR/.payload_version"
@@ -29,8 +36,8 @@ VER_PREFIX="4.6_dev"
 # Read existing channel if present
 if [ -f "$FF_DIR/channel" ]; then
     BRANCH=$(cat "$FF_DIR/channel" | tr -d '[:space:]')
-elif [ -f "/etc/firewallfalcon/channel" ]; then
-    BRANCH=$(cat "/etc/firewallfalcon/channel" | tr -d '[:space:]')
+elif [ -f "/etc/DAHOOM/channel" ]; then
+    BRANCH=$(cat "/etc/DAHOOM/channel" | tr -d '[:space:]')
 fi
 
 # Parse command line arguments
@@ -386,8 +393,8 @@ install_tool() {
         [[ "$arg" == "--silent" ]] && silent_install=true
     done
 
-    if [ -f "/etc/firewallfalcon/channel" ]; then
-        BRANCH=$(cat "/etc/firewallfalcon/channel" | tr -d '[:space:]')
+    if [ -f "/etc/DAHOOM/channel" ]; then
+        BRANCH=$(cat "/etc/DAHOOM/channel" | tr -d '[:space:]')
         if [[ "$BRANCH" == "dev" ]]; then
             VER_PREFIX="4.6_dev"
         elif [[ "$BRANCH" == "beta2" ]]; then
@@ -428,8 +435,8 @@ install_tool() {
     SSHD_URL="$(_fm_gh_raw)/${BRANCH}/ssh"
 
     # Save the selected channel
-    mkdir -p "/etc/firewallfalcon" 2>/dev/null
-    echo "$BRANCH" > "/etc/firewallfalcon/channel"
+    mkdir -p "/etc/DAHOOM" 2>/dev/null
+    echo "$BRANCH" > "/etc/DAHOOM/channel"
 
     echo
     echo -e "  ${C_CYAN}┌── Installation ────────────────────────────────────────┐${C_RESET}"
@@ -540,7 +547,7 @@ uninstall_tool() {
     else
         echo -e "  ${C_YELLOW}⚠️ Menu binary is missing — removing residual files...${C_RESET}"
         rm -rf "$FF_DIR"
-        rm -f "/etc/update-motd.d/01-falcon-banner" "/usr/local/bin/falcon-motd" "/etc/profile.d/falcon_motd.sh"
+        rm -f "/etc/update-motd.d/01-dahoom-banner" "/usr/local/bin/dahoom-motd" "/etc/profile.d/dahoom_motd.sh"
         chmod +x /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news 2>/dev/null || true
         echo -e "  ${C_GREEN}✅ Residual files removed.${C_RESET}"
     fi
@@ -739,7 +746,7 @@ show_details() {
     echo -e "${C_GRAY}${C_DIM}──────────────────────────────────────────────${C_RESET}"
     echo -e "  ${C_GRAY}${C_DIM}Features:${C_RESET}"
     echo -e "   - SSH: Create, renew, lock & delete accounts"
-    echo -e "   - VPN: DNSTT, UDP-Custom, BadVPN, HAProxy, Falcon"
+    echo -e "   - VPN: DNSTT, UDP-Custom, BadVPN, HAProxy, dahoom"
     echo -e "   - Tools: Traffic monitor, trial & backups"
     echo -e "   - Web Panel: Control panel & deSEC DNS"
     echo -e "${C_GRAY}${C_DIM}──────────────────────────────────────────────${C_RESET}"
