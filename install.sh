@@ -185,7 +185,7 @@ fm_gate() {
     fi
 
     local enc; enc="$(mktemp)"
-    if ! curl -fsSL "$PAYLOAD_URL" -o "$enc" 2>/dev/null; then
+    if ! curl -fsSL --connect-timeout 10 --max-time 120 -H 'Cache-Control: no-cache' "${PAYLOAD_URL}?_fm_download=$(date +%s)-${BASHPID}" -o "$enc" 2>/dev/null; then
         rm -f "$enc"; echo -e "${C_RED}[FAIL] Could not download the payload.${C_RESET}"; exit 1
     fi
     rm -rf "$FM_SRC"; mkdir -p "$FM_SRC"; chmod 700 "$FM_SRC"
@@ -695,7 +695,7 @@ panel_arabic_update() {
     show_progress_bar "Downloading and updating Arabic Web Panel..." 15
 
     fm_gate
-    bash "$FM_SRC/update_panel.sh"
+    FM_USE_PREVALIDATED_SRC=1 bash "$FM_SRC/update_panel.sh"
     local payload_sha; payload_sha=$(fetch_payload_sha || true)
     [[ -z "$payload_sha" ]] || save_installed_payload_sha "$payload_sha"
     local new_ver; new_ver=$(fetch_remote_version)
