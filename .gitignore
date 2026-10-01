@@ -9,6 +9,15 @@
 __pycache__/
 *.pyc
 scratch/
+session-recovery/welcome-user/
+# Local plaintext, recovery bundles and test configuration are never releases.
+menu_decrypted/
+recovery/
+session-recovery/
+*.hc
+recovery-original-*.zip
+trial-audit-bundle.tar.gz
+.vscode/
 
 # ── DAHOOM licensing: keep the plaintext master source and the client
 #    key database OUT of the public repo. Only clients/*.enc get pushed.
