@@ -386,7 +386,7 @@ patch_menu_for_uninstall() {
 # ---- Install DAHOOM ----
 install_tool() {
     clear
-    
+
     # If not silent and not pre-configured, prompt for channel
     local silent_install=false
     for arg in "$@"; do
