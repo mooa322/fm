@@ -15,10 +15,10 @@ cd "$(dirname "$0")/.."
 PAYLOAD_KEY="$(_fm_payload_key)" || exit 1
 
 command -v openssl >/dev/null || { echo "[ERROR] openssl required"; exit 1; }
-for f in "${FM_PAYLOAD[@]}"; do [ -f "$FM_SRC_DIR/$f" ] || { echo "[ERROR] missing $FM_SRC_DIR/$f"; exit 1; }; done
+[ -f "$FM_SRC_DIR/menu.sh" ] || { echo "[ERROR] missing $FM_SRC_DIR/menu.sh"; exit 1; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-tar -czf "$TMP/bundle.tgz" -C "$FM_SRC_DIR" "${FM_PAYLOAD[@]}"
+tar -czf "$TMP/bundle.tgz" -C "$FM_SRC_DIR" .
 # shellcheck disable=SC2086
 openssl enc $FM_CIPHER -in "$TMP/bundle.tgz" -out menu.enc -pass "pass:${PAYLOAD_KEY}"
 

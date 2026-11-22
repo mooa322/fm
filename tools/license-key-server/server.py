@@ -38,6 +38,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 HERE = os.path.dirname(os.path.abspath(__file__))
 KEY_FILE = os.path.join(HERE, "payload.key")
 LOG_FILE = os.path.join(HERE, "access.log")
+LOCAL_LICENSES_FILE = os.path.join(HERE, "licenses.json")
+TOKEN_FILE = os.path.join(HERE, "github.token")
 
 # نفس مصدر reg.json اللي يقرأه install.sh وsrc/menu.sh حاليًا —
 # Contents API أولًا (يدعم رؤوس raw)، وraw.githubusercontent.com
@@ -82,16 +84,36 @@ def _rate_limited(ip: str) -> bool:
 
 
 def _fetch_licenses() -> dict:
-    req = urllib.request.Request(
-        LICENSES_URL, headers={"Accept": "application/vnd.github.raw"}
-    )
+    # 1) فحص وجود ملف تراخيص محلي أولاً (أكثر أماناً، لا يحتاج مستودع عام مكشوف)
+    if os.path.exists(LOCAL_LICENSES_FILE):
+        try:
+            with open(LOCAL_LICENSES_FILE, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            _log({"event": "local_licenses_error", "detail": str(e)})
+
+    # 2) جلب التراخيص من GitHub (مع دعم توكن المستودعات الخاصة Private Repos)
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if not token and os.path.exists(TOKEN_FILE):
+        try:
+            with open(TOKEN_FILE, encoding="utf-8") as f:
+                token = f.read().strip()
+        except OSError:
+            pass
+
+    headers = {"Accept": "application/vnd.github.raw"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    req = urllib.request.Request(LICENSES_URL, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=8) as r:
             return json.loads(r.read().decode("utf-8"))
     except Exception:
         pass
     try:
-        with urllib.request.urlopen(LICENSES_URL_FALLBACK, timeout=8) as r:
+        req_fallback = urllib.request.Request(LICENSES_URL_FALLBACK, headers=headers)
+        with urllib.request.urlopen(req_fallback, timeout=8) as r:
             return json.loads(r.read().decode("utf-8"))
     except Exception:
         return {}
@@ -109,8 +131,6 @@ def _validate(license_id: str, client_ip: str):
     licenses = _fetch_licenses()
     if not licenses:
         # فشل الوصول لسجل التراخيص نفسه — نرفض بدل ما نسمح افتراضيًا
-        # (خلافًا لفحص install.sh القديم اللي كان "يفشل مفتوحًا")، لأن
-        # هذا هو الحارس الحقيقي الوحيد الآن، لا مجرد طبقة UX إضافية.
         return False, "registry_unreachable"
     block = licenses.get(license_id)
     if block is None:
@@ -118,25 +138,35 @@ def _validate(license_id: str, client_ip: str):
     if block.get("revoked"):
         return False, "revoked"
     bound_ip = block.get("ip")
-    if bound_ip and bound_ip != client_ip:
-        return False, "ip_mismatch"
+    if bound_ip:
+        # رفض صارم إذا كان الـ IP مفقودًا أو loopback أو لا يطابق IP الترخيص المسجل
+        if not client_ip or client_ip in ("127.0.0.1", "::1", "localhost") or bound_ip != client_ip:
+            return False, "ip_mismatch"
     return True, "ok"
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "FMKeyServer/1.0"
+    server_version = "FMKeyServer/1.1"
     protocol_version = "HTTP/1.1"
 
     def log_message(self, fmt, *args):  # noqa: A002 - نستخدم _log() بدل سجل الأساس
         pass
 
     def _client_ip(self) -> str:
-        # Caddy (reverse_proxy) يضيف هذي الترويسة تلقائيًا بعنوان العميل
-        # الحقيقي؛ لو ما وصلت (اتصال مباشر بدون بروكسي) نرجع لعنوان
-        # الاتصال الخام.
-        fwd = self.headers.get("X-Forwarded-For", "")
+        # 1. الأولوية لـ X-Real-IP الذي يضبطه البروكسي الموثوق (Nginx / Caddy)
+        real_ip = self.headers.get("X-Real-IP", "").strip()
+        if real_ip and real_ip not in ("127.0.0.1", "::1"):
+            return real_ip
+
+        # 2. فحص X-Forwarded-For مع تجنب التزييف (Spoofing)
+        fwd = self.headers.get("X-Forwarded-For", "").strip()
         if fwd:
-            return fwd.split(",")[0].strip()
+            # البروكسي يضيف عنوان العميل الحقيقي في نهاية السلسلة
+            parts = [p.strip() for p in fwd.split(",") if p.strip()]
+            for p in reversed(parts):
+                if p not in ("127.0.0.1", "::1", "localhost"):
+                    return p
+
         return self.client_address[0]
 
     def _send_json(self, status: int, obj: dict) -> None:
@@ -156,7 +186,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "not_found"})
 
     def do_POST(self):
-        if self.path != "/v1/key":
+        if self.path not in ("/v1/key", "/v1/check"):
             return self._send_json(404, {"error": "not_found"})
 
         ip = self._client_ip()
@@ -173,10 +203,14 @@ class Handler(BaseHTTPRequestHandler):
 
         license_id = str(body.get("license", "")).strip()
         ok, reason = _validate(license_id, ip)
-        _log({"event": "key_request", "license": license_id, "ip": ip, "ok": ok, "reason": reason})
+        event_name = "check_request" if self.path == "/v1/check" else "key_request"
+        _log({"event": event_name, "license": license_id, "ip": ip, "ok": ok, "reason": reason})
 
         if not ok:
             return self._send_json(403, {"error": reason})
+
+        if self.path == "/v1/check":
+            return self._send_json(200, {"status": "ok"})
 
         try:
             key = _payload_key()

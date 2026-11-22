@@ -151,36 +151,53 @@ fm_gate() {
     [ -n "$id" ] || { echo -e "${C_RED}[FAIL] No license provided.${C_RESET}"; exit 1; }
     [[ "$id" =~ ^[A-Za-z0-9_-]+$ ]] || { echo -e "${C_RED}[FAIL] Invalid license code.${C_RESET}"; exit 1; }
 
-    local licenses; licenses="$(curl -fsSL --max-time 10 -H "Accept: application/vnd.github.raw" "$(_fm_licenses_url)" 2>/dev/null || true)"
-    # api.github.com shares GitHub's low unauthenticated rate limit (60/hr per IP)
-    # and can also be blocked/slow on some networks; fall back to the raw CDN
-    # mirror (looser limits) before giving up.
-    [ -n "$licenses" ] || licenses="$(curl -fsSL --max-time 10 "$(_fm_licenses_url_fallback)" 2>/dev/null || true)"
-    [ -n "$licenses" ] || { echo -e "${C_RED}[FAIL] Could not reach the license list. Check your internet.${C_RESET}"; exit 1; }
-
-    local block; block="$(printf '%s\n' "$licenses" | grep -A3 "\"${id}\": {" || true)"
-    if [ -z "$block" ]; then
-        echo -e "${C_RED}[FAIL] License '${id}' is not valid.${C_RESET}"
-        echo -e "${C_YELLOW}       Contact the provider for a valid license.${C_RESET}"
-        exit 1
-    fi
-    if printf '%s' "$block" | grep -q '"revoked": *true'; then
-        echo -e "${C_RED}[FAIL] License '${id}' has been revoked.${C_RESET}"
-        echo -e "${C_YELLOW}       Contact the provider if you believe this is a mistake.${C_RESET}"
-        exit 1
-    fi
-
-    local bound_ip; bound_ip="$(printf '%s' "$block" | sed -n 's/.*"ip": *"\([^"]*\)".*/\1/p')"
-    if [ -n "$bound_ip" ]; then
-        local ip
-        ip="$(curl -fsS --max-time 8 https://api.ipify.org 2>/dev/null \
-              || curl -fsS --max-time 8 https://ifconfig.me/ip 2>/dev/null \
-              || curl -fsS --max-time 8 https://icanhazip.com 2>/dev/null)"
-        ip="$(printf '%s' "$ip" | tr -d '[:space:]')"
-        if [ -n "$ip" ] && [ "$ip" != "$bound_ip" ]; then
-            echo -e "${C_RED}[FAIL] License '${id}' is registered to a different server.${C_RESET}"
+    local pkey_resp; pkey_resp="$(curl -fsS --max-time 10 -X POST "$(_fm_licsrv_url)/v1/check" \
+                 -H 'Content-Type: application/json' \
+                 --data-binary "{\"license\":\"${id}\"}" 2>/dev/null || true)"
+    if [ -n "$pkey_resp" ]; then
+        if printf '%s' "$pkey_resp" | grep -q '"error": *"ip_mismatch"'; then
+            echo -e "${C_RED}[FAIL] License '${id}' is registered to a different server IP.${C_RESET}"
             echo -e "${C_YELLOW}       Contact the provider if you need it moved.${C_RESET}"
             exit 1
+        elif printf '%s' "$pkey_resp" | grep -q '"error": *"revoked"'; then
+            echo -e "${C_RED}[FAIL] License '${id}' has been revoked.${C_RESET}"
+            echo -e "${C_YELLOW}       Contact the provider if you believe this is a mistake.${C_RESET}"
+            exit 1
+        elif printf '%s' "$pkey_resp" | grep -q '"error": *"not_found"'; then
+            echo -e "${C_RED}[FAIL] License '${id}' is not valid.${C_RESET}"
+            echo -e "${C_YELLOW}       Contact the provider for a valid license.${C_RESET}"
+            exit 1
+        fi
+    else
+        # Fallback to direct registry check if key server endpoint is unreachable
+        local licenses; licenses="$(curl -fsSL --max-time 10 -H "Accept: application/vnd.github.raw" "$(_fm_licenses_url)" 2>/dev/null || true)"
+        [ -n "$licenses" ] || licenses="$(curl -fsSL --max-time 10 "$(_fm_licenses_url_fallback)" 2>/dev/null || true)"
+        [ -n "$licenses" ] || { echo -e "${C_RED}[FAIL] Could not reach the license server or registry. Check your internet.${C_RESET}"; exit 1; }
+
+        local block; block="$(printf '%s\n' "$licenses" | grep -A3 "\"${id}\": {" || true)"
+        if [ -z "$block" ]; then
+            echo -e "${C_RED}[FAIL] License '${id}' is not valid.${C_RESET}"
+            echo -e "${C_YELLOW}       Contact the provider for a valid license.${C_RESET}"
+            exit 1
+        fi
+        if printf '%s' "$block" | grep -q '"revoked": *true'; then
+            echo -e "${C_RED}[FAIL] License '${id}' has been revoked.${C_RESET}"
+            echo -e "${C_YELLOW}       Contact the provider if you believe this is a mistake.${C_RESET}"
+            exit 1
+        fi
+
+        local bound_ip; bound_ip="$(printf '%s' "$block" | sed -n 's/.*"ip": *"\([^"]*\)".*/\1/p')"
+        if [ -n "$bound_ip" ]; then
+            local ip
+            ip="$(curl -fsS --max-time 8 https://api.ipify.org 2>/dev/null \
+                  || curl -fsS --max-time 8 https://ifconfig.me/ip 2>/dev/null \
+                  || curl -fsS --max-time 8 https://icanhazip.com 2>/dev/null)"
+            ip="$(printf '%s' "$ip" | tr -d '[:space:]')"
+            if [ -n "$ip" ] && [ "$ip" != "$bound_ip" ]; then
+                echo -e "${C_RED}[FAIL] License '${id}' is registered to a different server.${C_RESET}"
+                echo -e "${C_YELLOW}       Contact the provider if you need it moved.${C_RESET}"
+                exit 1
+            fi
         fi
     fi
 

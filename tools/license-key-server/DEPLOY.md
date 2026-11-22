@@ -156,11 +156,15 @@ server {
     server_name de.dahoom.de5.net;
     ssl_certificate     /etc/letsencrypt/live/de.dahoom.de5.net/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/de.dahoom.de5.net/privkey.pem;
+
+    set_real_ip_from 127.0.0.1;
+    real_ip_header proxy_protocol;
+
     location / {
         proxy_pass http://127.0.0.1:8420;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $proxy_protocol_addr;
-        proxy_set_header X-Forwarded-For $proxy_protocol_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }

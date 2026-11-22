@@ -8,5 +8,8 @@
 # ثم: sudo systemctl reload caddy
 
 de.dahoom.de5.net {
-    reverse_proxy 127.0.0.1:8420
+    reverse_proxy 127.0.0.1:8420 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
 }
